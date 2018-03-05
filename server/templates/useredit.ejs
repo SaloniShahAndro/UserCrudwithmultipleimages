@@ -118,6 +118,7 @@
             uploadMultiple: true,
             paramName: paramNameForSend,
             method: 'post',
+            acceptedFiles: 'image/*',
             parallelUploads: 10,
             addRemoveLinks: true,
 
@@ -167,9 +168,9 @@
                   
                 }
             },
-            success: function (file, done) {
+            error:function() {
 
-
+                alert("this is wrong file type")
             }
         });
 
