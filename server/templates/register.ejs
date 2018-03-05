@@ -1,0 +1,153 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
+<script src="../assets/js/dropzone.js"></script>
+
+<div class="form-container">
+    <h2>Register</h2>
+
+    <form method="post" action="/dashbord" id="registerform" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="firstname">First name</label>
+            <input type="text" name="firstname" id="firstname" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last name</label>
+            <input type="text" name="lastname" id="lastname" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="email">Email Id</label>
+            <input type="email" name="email" id="email" class="form-control" />
+            <span id="span"></span>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="password">Confirm Password</label>
+            <input type="password" name="cpassword" id="cpassword" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <input type="radio" name="gender" value="male" checked> Male
+
+            <input type="radio" name="gender" value="female"> Female
+            <br>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea rows="4" cols="50" name="description" id="description"></textarea>
+        </div>
+        <div class="dropzone dz-clickable" id="profilepicture" name="profilepicture">
+            <div class="dz-default dz-message" data-dz-message="">
+                <span>Drop files here to upload for profile picture</span>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select name="status" size="2" id="status">
+                <option value="active">Active</option>
+                <option value="inactive" selected>Inactive</option>
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" id="submit-all">Register</button>
+
+        </div>
+
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    Dropzone.autoDiscover = false;
+
+    function paramNameForSend() {
+        return "profilepicture";
+    }
+    $(document).ready(function () {
+        $("#registerform").validate({
+
+            rules: {
+                firstname: { required: true },
+                lastname: { required: true },
+                email: { required: true, email: true },
+                password: { required: true, minlength: 5 },
+                cpassword: { required: true, minlength: 5, equalTo: "#password" },
+                description: { required: true },
+                profilepicture: {
+                    required: true,
+                    accept: "image/jpg ,image/jpeg, image/png"
+                }
+            },
+            errorPlacement: function (error, element) {
+                if (element.prop("type") === "radio") {
+                    error.insertAfter(element.parent().parent(".r-wrap"));
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+        var myDropzone = new Dropzone("#profilepicture", {
+            url: '/dashbord',
+            maxFilesize: 5, // MB
+            maxFiles: 10,
+            autoProcessQueue: false,
+            uploadMultiple: true,
+            paramName: paramNameForSend,
+            method: 'post',
+            parallelUploads: 10,
+            addRemoveLinks: true,
+            init: function () {
+                var myDropzone = this;
+
+                document.getElementById("submit-all").addEventListener("click", function (e) {
+                    // Make sure that the form isn't actually being sent.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        myDropzone.processQueue();
+                        if ($("#registerform").valid()) {
+                            setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
+                        }
+                    } else {
+                        myDropzone.uploadFiles([]);
+                        alert("please upload profile picture")
+                    }
+
+                });
+
+                //send all the form data along with the files:
+                this.on("sendingmultiple", function (data, xhr, formData) {
+                    formData.append("firstname", $("#firstname").val());
+                    formData.append("lastname", $("#lastname").val());
+                    formData.append("email", $("#email").val());
+                    formData.append("password", $("#password").val());
+                    formData.append("description", $("#description").val());
+                    formData.append("gender", $('input[name=gender]:checked', '#registerform').val());
+                    formData.append("status", $("#status :selected").val());
+
+                });
+            },
+            removedfile: function (file) {
+                x = confirm('Do you want to delete?');
+                if (!x) {
+                    return false;
+                } else {
+                    $(document).find(file.previewElement).remove()
+                }
+            },
+        });
+
+
+
+    })
+
+</script>

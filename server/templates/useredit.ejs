@@ -1,0 +1,198 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
+<script src="../assets/js/dropzone.js"></script>
+<script src="../assets/css/dropzone.css"></script>
+
+
+
+<div class="form-container">
+    <h2>Update</h2>
+
+    <form method="post" action="/temp/<%= userdata.id%>" id="updateform" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="firstname">First name</label>
+            <input type="text" name="firstname" id="firstname" class="form-control" value="<%= userdata.firstname%>" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last name</label>
+            <input type="text" name="lastname" id="lastname" class="form-control" value="<%= userdata.lastname%>" />
+        </div>
+        <div class="form-group">
+            <label for="email">Email Id</label>
+            <input type="email" name="email" id="email" class="form-control" value="<%= userdata.email%>" readonly/>
+            <span id="span"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <%if (userdata.gender == 'male') { %>
+                <input type="radio" name="gender" value="male" checked> Male
+                <input type="radio" name="gender" value="female"> Female
+                <% }else{%>
+                    <input type="radio" name="gender" value="male"> Male
+                    <input type="radio" name="gender" value="female" checked> Female
+                    <% } %>
+                        <br>
+        </div>
+
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea rows="4" cols="50" name="description" id="description"><%= userdata.description%></textarea>
+        </div>
+
+        <label>Profile Picture</label>
+        <div>
+            <% for(var k=0; k<(userdata.profilepics).length; k++) {%>
+                <img src="/assets/tmp/<%= userdata.profilepics[k].profilepicture %>" />
+                <button class="removeimage" id="<%= userdata.profilepics[k].id %>">Remove Image</button>
+
+                <% } %>
+
+        </div>
+        <div class="dropzone dz-clickable tempclass" id="profilepicture" name="profilepicture">
+            <div class="dz-default dz-message " data-dz-message="">
+
+                <span>Drop files here to upload for profile picture</span>
+            </div>
+        </div>
+</div>
+
+
+
+<div class="form-group">
+    <label for="status">Status</label>
+    <select name="status" size="2" id="status">
+        <%if (userdata.status == 'active') { %>
+            <option value="active" selected>Active</option>
+            <option value="inactive">Inactive</option>
+            <% }else{%>
+                <option value="active">Active</option>
+                <option value="inactive" selected>Inactive</option>
+                <% } %>
+    </select>
+</div>
+
+<div class="form-group">
+    <button type="submit" class="btn btn-primary" id="submit-all">Update</button>
+
+</div>
+
+</form>
+</div>
+
+<script type="text/javascript">
+    Dropzone.autoDiscover = false;
+    function paramNameForSend() {
+        return "profilepicture";
+    }
+    $(document).ready(function () {
+        $("#updateform").validate({
+
+            rules: {
+                firstname: { required: true },
+                lastname: { required: true },
+                description: { required: true },
+                profilepicture: {
+
+                    accept: "image/jpg ,image/jpeg, image/png",
+
+                }
+            },
+            errorPlacement: function (error, element) {
+                if (element.prop("type") === "radio") {
+                    error.insertAfter(element.parent().parent(".r-wrap"));
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+        var myDropzone = new Dropzone("#profilepicture", {
+            url: '/temp/<%= userdata.id%>',
+            maxFilesize: 5, // MB
+            maxFiles: 10,
+            autoProcessQueue: false,
+            uploadMultiple: true,
+            paramName: paramNameForSend,
+            method: 'post',
+            parallelUploads: 10,
+            addRemoveLinks: true,
+
+            init: function () {
+                var myDropzone = this;
+
+                document.getElementById("submit-all").addEventListener("click", function (e) {
+                    // Make sure that the form isn't actually being sent.
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    /* for checking if files are added or not in dropzone */
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        myDropzone.processQueue();
+                    }else {
+                        myDropzone.uploadFiles([]);
+                        $("#updateform").submit()//for submitting files even if image is not added in dropzone
+                    }
+
+
+                    if ($("#updateform").valid()) {
+                        setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
+                    }
+                });
+
+                //send all the form data along with the files:
+                this.on("sendingmultiple", function (data, xhr, formData) {
+                    formData.append("firstname", $("#firstname").val());
+                    formData.append("lastname", $("#lastname").val());
+                    formData.append("description", $("#description").val());
+                    formData.append("gender", $('input[name=gender]:checked', '#updateform').val());
+                    formData.append("status", $("#status :selected").val());
+
+                });
+                var removeButton = Dropzone.createElement("<button>Remove file</button>");
+                // removeButton.addEventListener(removedfile);
+
+            },
+            removedfile: function (file) {
+                x = confirm('Do you want to delete?');
+                if (!x) {
+                    return false;
+                } else {
+                   
+                    $(document).find(file.previewElement).remove()
+                    //for removing particular image from dropzone
+                  
+                }
+            },
+            success: function (file, done) {
+
+
+            }
+        });
+
+        $(".removeimage").click(function () {
+
+            y = confirm('Do you want to delete?');
+            var id = $(this).attr('id')
+
+
+            if (!y) {
+                return false;
+            } else {
+                $.ajax({
+                    method: 'GET',
+                    url: '/removeimage/' + id,
+                    success: function (result) {
+                        console.log("delted", id)
+                        location.reload();
+                    }
+                })
+            }
+        });
+
+    })
+
+</script>

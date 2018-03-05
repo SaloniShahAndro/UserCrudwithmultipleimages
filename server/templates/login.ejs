@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
+
+<div class="form-container">
+    <h2>Login</h2>
+
+    <form method="post" action="/dashboard" id="loginform">
+        <div id="signupalert" style="display:none" class="alert"></div>                            
+
+        <div class="form-group">
+            <label for="email">Email Id</label>
+            <input type="email" name="email" id="email" class="form-control" required />
+            <span id="span"></span>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+                <button type="submit" class="btn btn-primary" >Login</button>
+            
+        </div>
+
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $( "#loginform" ).validate({
+        
+            rules: {
+                email: {required: true,email:true},   
+                password: {required: true, minlength: 5},
+            },     
+            errorPlacement: function ( error, element ) {       
+                if ( element.prop( "type" ) === "radio" ) {
+                    error.insertAfter( element.parent().parent( ".r-wrap" ) );
+                } else {
+                    error.insertAfter( element );
+                }
+            }
+        });
+
+        
+    })
+
+</script>

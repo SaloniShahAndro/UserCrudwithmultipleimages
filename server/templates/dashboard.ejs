@@ -1,0 +1,124 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="/assets/css/common.css" />
+
+<script type="text/javascript" src="../assets/js/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+<link rel="stylesheet" href="../assets/js/fancybox/jquery.fancybox-1.3.4.css" />
+
+<a href="/register">
+    <button type="button">Add User</button>
+</a>
+
+<a href="/logout">
+    <button type="button">Logout</button>
+</a>
+
+<body>
+    <h1>User List</h1>
+
+    <div class="">
+        <% if(alluserdata.length > 0){ %>
+            <table width="100%" class="table responsive " id="tbluser">
+                <tbody>
+                    <% for(var i=0; i<(alluserdata).length; i++) {%>
+                        <tr data-id="<%= alluserdata[i].id %>">
+                            <td style="width:90px; height:90px">
+                                <div class="bd_d first" >
+                                    <div class="icons-radius">
+                                        <% for(var j=0; j<(alluserdataslider[i].profilepics).length; j++) {%>
+                                            <% if(alluserdataslider[i].profilepics[j].profilepicture) { %>
+                                                <% if(j>0){%>
+                                                    <a class="grouped_elements" rel="<%= alluserdataslider[i].profilepics[j].user_id %>" style="display:none" href="/assets/multiimage/<%= alluserdataslider[i].profilepics[j].profilepicture %>">
+                                                        <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdata[i].id %>" />
+                                                    </a>
+                                                <% }else {%>
+                                                    <a class="grouped_elements" rel="<%= alluserdataslider[i].profilepics[j].user_id %>" style="display:block" href="/assets/multiimage/<%= alluserdataslider[i].profilepics[j].profilepicture %>">
+                                                        <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdata[i].id %>" />
+                                                    </a>
+                                                    <% } %>
+                                               
+                                                <% } else { %>
+                                                    <label>No image</label>
+                                                    <% } %>
+                                                        <% } %>
+                                    </div>
+                                </div>
+
+
+                            </td>
+
+                            <td>
+                                <div class="bd_d detail-table">
+                                    <h2 class="user_title">
+                                        <%= alluserdata[i].firstname %>
+                                            <%= alluserdata[i].lastname %>
+                                    </h2>
+                                    <p>
+                                        <%= alluserdata[i].email %>
+                                    </p>
+                                    <div>
+                                        <% if(alluserdata[i].status == 'active') { %>
+                                            <p>status: Active</p>
+                                            <% } else { %>
+                                                <p>status: Inactive</p>
+                                                <% } %>
+                                    </div>
+
+                                </div>
+                            </td>
+                            <td width="120" class="tooltip-demo">
+                                <div class="bd_d  last">
+                                    <div class="table-btn">
+                                        <button id="<%= alluserdata[i].id %>" class="btn-sm btn btn-outline-red btn-delete" >Delete</button>
+                                        <a class="btn btn-default btn-sm" href="/useredit/<%= alluserdata[i].id %>">Edit</a>
+
+                                    </div>
+                                </div>
+                            </td>
+
+                        </tr>
+
+
+                        <% } %>
+                </tbody>
+            </table>
+            <% } else { %>
+                <label>No data available</label>
+                <% }%>
+
+
+    </div>
+
+    </div>
+
+
+    <br>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("a.grouped_elements").fancybox();
+
+            $(".btn-delete").click(function () {
+                y = confirm('Do you want to delete?');
+                var id = $(this).attr('id')
+                
+
+                if (!y) {
+                    return false;
+                } else {
+                    $.ajax({
+                        method: 'GET',
+                        url: '/user/delete/' + id,
+                        success: function (result) {
+                            console.log("delted", id)
+                            location.reload();
+                        }
+                    })
+                }
+            })
+
+        })
+
+    </script>
+</body>
