@@ -17,11 +17,18 @@ const User = seq.sequelize.define('user', {
         values:['male','female']
     },description:{
         type:seq.Sequelize.TEXT
-    },profilepicture:{
-        type:seq.Sequelize.STRING
     },status:{
         type:seq.Sequelize.ENUM,
         values:['active','inactive']
+    },date:{
+        type:seq.Sequelize.DATEONLY,
+        defaultValue: seq.Sequelize.NOW,
+        
+    },latitude:{
+        type: seq.Sequelize.DECIMAL(10,8)
+    },
+    longitude:{
+        type: seq.Sequelize.DECIMAL(10,8)
     }
   },
   {

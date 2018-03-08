@@ -2,8 +2,20 @@
 <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
 <script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
+<!-- dropzone -->
 <script src="../assets/js/dropzone.js"></script>
-<link rel="stylesheet" href="../assets/css/dropzone.css"/>
+<link rel="stylesheet" href="../assets/css/dropzone.css" />
+<!-- time picker -->
+<link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-clockpicker.min.css">
+<script type="text/javascript" src="../assets/js/bootstrap-clockpicker.min.js"></script>
+<!-- date picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"
+/>
+<!-- google maps place picker -->
+<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBh3L6bSHK9aG4fmX3F2Xd4k-tizhu685Y&sensor=true&libraries=places"></script>
+<script src="../assets/js/locationpicker.jquery.js"></script>
+
 
 <div class="form-container">
     <h2>Register</h2>
@@ -42,7 +54,7 @@
             <textarea rows="4" cols="50" name="description" id="description"></textarea>
         </div>
         <div class="dropzone dz-clickable" id="profilepicture" name="profilepicture">
-            <div class="dz-default dz-message" data-dz-message="" >
+            <div class="dz-default dz-message" data-dz-message="">
                 <span>Drop files here to upload for profile picture</span>
             </div>
 
@@ -56,8 +68,31 @@
 
             </select>
         </div>
-
         <div class="form-group">
+            <label class="col-sm-1 control-label">Date</label>
+            <div class="col-sm-2 date">
+                <div class="input-group input-append date" id="datePicker">
+                    <input type="text" class="form-control" name="date" id="date" />
+                    <span class="input-group-addon add-on">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div>
+            Location:
+            <input type="text" id="us2-address" style="width: 200px" />
+
+            <div id="us2" style="width: 700px; height: 400px;"></div>
+            Lat.:
+            <input type="text" id="us2-lat" /> Long.:
+            <input type="text" id="us2-lon" />
+        </div>
+        <div class="form-group col-sm-12">
             <button type="submit" class="btn btn-primary" id="submit-all">Register</button>
 
         </div>
@@ -73,6 +108,85 @@
         return "profilepicture";
     }
     $(document).ready(function () {
+        /* old date picker
+        */
+
+        // var date_input = $('input[name="date"]'); //our date input has the name "date"
+        // var container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
+        // var options = {
+        //     format: 'mm/dd/yyyy',
+        //     container: container,
+        //     todayHighlight: true,
+        //     autoclose: true,
+        //     min:03/06/2018,
+        //     max:04/06/2018
+        // };
+        // date_input.datepicker(options);
+
+
+        $('#datePicker').datepicker({
+            autoclose: true,
+            format: "mm/dd/yyyy",
+            startDate: "03/06/2018"
+
+        }).on('changeDate', function (e) {
+
+
+            var stringdate = JSON.stringify(e.date.toString());
+            stringdate = stringdate.split(" ");
+            var datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
+            console.log(">>>>ee", datess)
+            datess: $('#date').val();
+            console.log(">>>>date value", $('#date').val())
+        })
+
+        /* for converting mmm to mm for date */
+        function getMonthFromString(mon) {
+
+            var d = Date.parse(mon + "1");
+            if (!isNaN(d)) {
+                return new Date(d).getMonth() + 1;
+            }
+            return -1;
+        }
+        // $('.clockpicker').clockpicker({
+        //     autoclose: true,
+        //     // placement:'top',
+        //     // align :'right',
+        //     //donetext:'Done',
+        //     // afterHourSelect: function () {
+        //     //     alert("you selected this hours")
+        //     // },
+        //     'default': 'now'
+
+        // })
+        //.hide();
+
+        /* location picker */
+        $('#us2').locationpicker({
+            enableAutocomplete: true,
+            enableReverseGeocode: true,
+            radius: 0,
+            inputBinding: {
+                latitudeInput: $('#us2-lat'),
+                longitudeInput: $('#us2-lon'),
+                radiusInput: $('#us2-radius'),
+                locationNameInput: $('#us2-address')
+            },
+            onchanged: function (currentLocation, radius, isMarkerDropped) {
+                var addressComponents = $(this).locationpicker('map').location.addressComponents;
+                console.log(">>currentlocation", currentLocation);  //latlon  
+                console.log(">>lat", currentLocation.latitude)
+                console.log(">>long", currentLocation.longitude)
+                console.log(">>country", addressComponents.country)
+                updateControls(addressComponents); //Data
+            }
+        });
+
+        function updateControls(addressComponents) {
+            console.log(addressComponents);
+        }
+
         $("#registerform").validate({
 
             rules: {
@@ -128,6 +242,9 @@
 
                 //send all the form data along with the files:
                 this.on("sendingmultiple", function (data, xhr, formData) {
+                    var lat = $("#us2-lat").val();
+                    var lng = $("#us2-lon").val()
+                    var latlng = { 'lat': lat, 'lng': lng }
                     formData.append("firstname", $("#firstname").val());
                     formData.append("lastname", $("#lastname").val());
                     formData.append("email", $("#email").val());
@@ -135,6 +252,10 @@
                     formData.append("description", $("#description").val());
                     formData.append("gender", $('input[name=gender]:checked', '#registerform').val());
                     formData.append("status", $("#status :selected").val());
+                    formData.append("date", $("#date").val());
+                    formData.append("latitude", $("#us2-lat").val());
+                    formData.append("longitude", $("#us2-lon").val());
+
 
                 });
             },

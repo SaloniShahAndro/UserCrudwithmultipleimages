@@ -20,11 +20,11 @@ exports.userdashboard = (req, res) => {
   if (usersession == false) {
     if (req.body.email == 'admin@gmail.com') {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        
+
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
 
           res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider })
-          
+
         })
 
       })
@@ -61,7 +61,7 @@ exports.postregisteruser = (req, res) => {
   upload(req, res).then(() => {
     var params = {}
     params = req.body
-
+    console.log(">>params", params)
     User.sync({ force: false }).then(() => {
 
       User.find({ where: { email: req.body.email } }).then(userdata => {
@@ -85,7 +85,7 @@ exports.postregisteruser = (req, res) => {
                 }).then((userprofilepicdata) => {
 
                   resize_image(userprofilepicdata.profilepicture)
-                  
+
                 })
               });
             })
@@ -116,39 +116,39 @@ exports.edituser = (req, res) => {
 /* post user edit data */
 exports.postedituser = (req, res) => {
   if (usersession) {
-      upload(req, res).then(() => {  
-        var params = {}
-        params['firstname'] = req.body.firstname;
-        params['lastname'] = req.body.lastname;
-        params['gender'] = req.body.gender;
-        params['description'] = req.body.description;
-        params['status'] = req.body.status;
-  
-  
-        User.update(params, {
-          where: {
-            id: req.params.id
-          }
-        }).then(updatedata => {
-  
-          req.files.forEach(element => {
-  
-            UserProfilepic.sync({ force: false }).then(() => {
-              UserProfilepic.create({
-                profilepicture: element.filename,
-                user_id: req.params.id
-              }).then((userprofilepicdata) => {
-                  resize_image(element.filename)
-                  res.redirect('/dashboard')
-  
-                })
-            });
-          })
-  
+    upload(req, res).then(() => {
+      var params = {}
+      params['firstname'] = req.body.firstname;
+      params['lastname'] = req.body.lastname;
+      params['gender'] = req.body.gender;
+      params['description'] = req.body.description;
+      params['status'] = req.body.status;
+
+
+      User.update(params, {
+        where: {
+          id: req.params.id
+        }
+      }).then(updatedata => {
+
+        req.files.forEach(element => {
+
+          UserProfilepic.sync({ force: false }).then(() => {
+            UserProfilepic.create({
+              profilepicture: element.filename,
+              user_id: req.params.id
+            }).then((userprofilepicdata) => {
+              resize_image(element.filename)
+              res.redirect('/dashboard')
+
+            })
+          });
         })
+
       })
-   
-   
+    })
+
+
   } else {
     res.redirect('/login')
   }
@@ -158,12 +158,19 @@ exports.postedituser = (req, res) => {
 }
 /* delete user  */
 exports.deleteUser = (req, res) => {
-
+User.find({where:{id: req.params.id},include: [{ model: UserProfilepic }]}).then(userdata=>{
   User.destroy({ where: { id: req.params.id } }).then(userdeletedata => {
-    console.log(">>>>delete data", userdeletedata)
+    userdata.profilepics.forEach(element=>{
+      console.log(">>>element",element)
+      fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
+      fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
+    })
+   
     res.redirect('/dashboard')
-
   })
+})
+  
+ 
 }
 
 /* logout user */
@@ -173,11 +180,11 @@ exports.logoutuser = (req, res) => {
 }
 
 /* remove image from database and also from server when click on remove image button in upload profile */
-exports.removeimage = (req,res) =>{
-  UserProfilepic.find({where:{id:req.params.id}}).then(userdeleteddata=>{
-    console.log(">>>>deleted data>>>", userdeleteddata.profilepicture)
+exports.removeimage = (req, res) => {
+  UserProfilepic.find({ where: { id: req.params.id } }).then(userdeleteddata => {
     UserProfilepic.destroy({ where: { id: req.params.id } }).then(userdata => {
       fs.unlink(`server/assets/tmp/${userdeleteddata.profilepicture}`)//for unlinking image from server
+      fs.unlink(`server/assets/multiimage/${userdeleteddata.profilepicture}`)//for unlinking image from server
       res.redirect('back')
     })
   })
