@@ -28,7 +28,10 @@ const User = seq.sequelize.define('user', {
         type: seq.Sequelize.DECIMAL(10,8)
     },
     longitude:{
-        type: seq.Sequelize.DECIMAL(10,8)
+        type: seq.Sequelize.DECIMAL(11,8)
+    },
+    address:{
+        type:seq.Sequelize.STRING
     }
   },
   {

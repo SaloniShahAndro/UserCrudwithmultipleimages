@@ -104,7 +104,7 @@ exports.postregisteruser = (req, res) => {
 exports.edituser = (req, res) => {
   if (usersession) {
     User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(edituserdata => {
-      // console.log(">>>>edituserdata",edituserdata)
+       console.log(">>>>edituserdata",edituserdata)
       res.render('useredit', { userdata: edituserdata })
     })
   } else {
@@ -123,16 +123,18 @@ exports.postedituser = (req, res) => {
       params['gender'] = req.body.gender;
       params['description'] = req.body.description;
       params['status'] = req.body.status;
-
+      params['date'] = req.body.date;
+      params['latitude'] = req.body.latitude;
+      params['longitude'] = req.body.longitude;
+      params['address'] = req.body.address;
+      console.log(">>params",params)
 
       User.update(params, {
         where: {
           id: req.params.id
         }
       }).then(updatedata => {
-
         req.files.forEach(element => {
-
           UserProfilepic.sync({ force: false }).then(() => {
             UserProfilepic.create({
               profilepicture: element.filename,

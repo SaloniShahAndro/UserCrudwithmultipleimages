@@ -3,7 +3,15 @@
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
 <script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
 <script src="../assets/js/dropzone.js"></script>
-<link rel="stylesheet" href="../assets/css/dropzone.css"/>
+<link rel="stylesheet" href="../assets/css/dropzone.css" />
+<!-- date picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"
+/>
+<!-- google maps place picker -->
+<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBh3L6bSHK9aG4fmX3F2Xd4k-tizhu685Y&sensor=true&libraries=places"></script>
+<script src="../assets/js/locationpicker.jquery.js"></script>
+
 
 
 
@@ -74,7 +82,27 @@
                 <% } %>
     </select>
 </div>
+<div class="form-group">
+    <label class="col-sm-1 control-label">Date</label>
+    <div class="col-sm-2 date">
+        <div class="input-group input-append date" id="datePicker">
+            <input type="text" class="form-control" name="date" id="date" />
+            <span class="input-group-addon add-on">
+                <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+        </div>
+    </div>
+</div>
 
+<div class="form-group">
+    Location:
+    <input type="text" id="us2-address" style="width: 200px" value="<%= userdata.address%>" name="address" />
+
+    <div id="us2" style="width: 700px; height: 400px;"></div>
+    Lat.:
+    <input type="text" id="us2-lat" value="<%= userdata.latitude%>" name="latitude" /> Long.:
+    <input type="text" id="us2-lon" value="<%= userdata.longitude%>" name="longitude" />
+</div>
 <div class="form-group">
     <button type="submit" class="btn btn-primary" id="submit-all">Update</button>
 
@@ -89,6 +117,78 @@
         return "profilepicture";
     }
     $(document).ready(function () {
+        var elem = document.getElementById("date");
+        var databasedate = "<%= userdata.date%>";
+        databasedate = databasedate.split("-")
+
+        elem.value = databasedate[1] + "/" + databasedate[2] + "/" + databasedate[0]
+        $('#datePicker').datepicker({
+            autoclose: true,
+            format: "mm/dd/yyyy",
+            startDate: "03/06/2018",
+
+
+        })
+            .on('changeDate', function (e) {
+
+
+                var stringdate = JSON.stringify(e.date.toString());
+                stringdate = stringdate.split(" ");
+                var datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
+                console.log(">>>>ee", datess)
+                datess: $('#date').val();
+                console.log(">>>>date value", $('#date').val())
+            })
+
+        /* for converting mmm to mm for date */
+        function getMonthFromString(mon) {
+
+            var d = Date.parse(mon + "1");
+            if (!isNaN(d)) {
+                return new Date(d).getMonth() + 1;
+            }
+            return -1;
+        }
+
+        /* location picker */
+        // var lat = document.getElementById("us2-lat");
+        // lat.value = "<%= userdata.latitude%>";
+        // var lon = document.getElementById("us2-lon");
+        // lon.value = "<%= userdata.longitude%>";
+        // var address = document.getElementById("us2-address");
+        // address.value = "<%= userdata.address%>";
+
+        $('#us2').locationpicker({
+            location: {
+                latitude: $('#us2-lat').val(),
+                longitude: $('#us2-lon').val()
+            },
+            enableAutocomplete: true,
+            enableReverseGeocode: true,
+            radius: 0,
+            onchanged: function (currentLocation, radius, isMarkerDropped) {
+                var addressComponents = $(this).locationpicker('map').location.addressComponents;
+
+                console.log(">>currentlocation", currentLocation);  //latlon  
+                console.log(">>lat", currentLocation.latitude)
+                console.log(">>long", currentLocation.longitude)
+                console.log(">>country", addressComponents.country)
+                updateControls(addressComponents); //Data
+            },
+            inputBinding: {
+                latitudeInput: $('#us2-lat'),
+                longitudeInput: $('#us2-lon'),
+                radiusInput: $('#us2-radius'),
+                locationNameInput: $('#us2-address')
+
+
+            },
+
+        });
+        function updateControls(addressComponents) {
+            console.log(addressComponents);
+        }
+
         $("#updateform").validate({
 
             rules: {
@@ -133,9 +233,10 @@
                     /* for checking if files are added or not in dropzone */
                     if (myDropzone.getQueuedFiles().length > 0) {
                         myDropzone.processQueue();
-                    }else {
+                    } else {
                         myDropzone.uploadFiles([]);
                         $("#updateform").submit()//for submitting files even if image is not added in dropzone
+
                     }
 
 
@@ -151,6 +252,11 @@
                     formData.append("description", $("#description").val());
                     formData.append("gender", $('input[name=gender]:checked', '#updateform').val());
                     formData.append("status", $("#status :selected").val());
+                    formData.append("date", $('#date').val());
+                    formData.append("latitude", $("#us2-lat").val());
+                    formData.append("longitude", $("#us2-lon").val());
+                    formData.append("address", $("#us2-address").val());
+
 
                 });
                 var removeButton = Dropzone.createElement("<button>Remove file</button>");
@@ -162,13 +268,13 @@
                 if (!x) {
                     return false;
                 } else {
-                   
+
                     $(document).find(file.previewElement).remove()
                     //for removing particular image from dropzone
-                  
+
                 }
             },
-            error:function() {
+            error: function () {
 
                 alert("this is wrong file type")
             }

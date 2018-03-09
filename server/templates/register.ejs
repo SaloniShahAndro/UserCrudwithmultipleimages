@@ -80,10 +80,7 @@
             </div>
         </div>
 
-
-
-
-        <div>
+        <div class="form-group">
             Location:
             <input type="text" id="us2-address" style="width: 200px" />
 
@@ -103,6 +100,7 @@
 <script type="text/javascript">
 
     Dropzone.autoDiscover = false;
+    var datess;
 
     function paramNameForSend() {
         return "profilepicture";
@@ -129,12 +127,13 @@
             format: "mm/dd/yyyy",
             startDate: "03/06/2018"
 
-        }).on('changeDate', function (e) {
+        })
+        .on('changeDate', function (e) {
 
 
             var stringdate = JSON.stringify(e.date.toString());
             stringdate = stringdate.split(" ");
-            var datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
+         datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
             console.log(">>>>ee", datess)
             datess: $('#date').val();
             console.log(">>>>date value", $('#date').val())
@@ -242,9 +241,7 @@
 
                 //send all the form data along with the files:
                 this.on("sendingmultiple", function (data, xhr, formData) {
-                    var lat = $("#us2-lat").val();
-                    var lng = $("#us2-lon").val()
-                    var latlng = { 'lat': lat, 'lng': lng }
+                    
                     formData.append("firstname", $("#firstname").val());
                     formData.append("lastname", $("#lastname").val());
                     formData.append("email", $("#email").val());
@@ -252,11 +249,11 @@
                     formData.append("description", $("#description").val());
                     formData.append("gender", $('input[name=gender]:checked', '#registerform').val());
                     formData.append("status", $("#status :selected").val());
-                    formData.append("date", $("#date").val());
+                    formData.append("date", $('#date').val());
                     formData.append("latitude", $("#us2-lat").val());
                     formData.append("longitude", $("#us2-lon").val());
-
-
+                    formData.append("address", $("#us2-address").val());
+                    
                 });
             },
             removedfile: function (file) {
