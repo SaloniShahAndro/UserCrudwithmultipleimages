@@ -9,7 +9,7 @@ const sUser = seq.sequelize.define('suser', {
     
     },
     userid:{
-        type:seq.Sequelize.DOUBLE
+        type:seq.Sequelize.STRING
     },
     accesstoken:{
         type:seq.Sequelize.TEXT,

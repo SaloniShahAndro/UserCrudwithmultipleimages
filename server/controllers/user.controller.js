@@ -10,38 +10,41 @@ const fs = require('fs')
 
 /* First screen for login user */
 exports.getloginuser = (req, res) => {
-  if(req.user){
-    res.render('login',{user:req.user})
-  }else{
-    res.render('login',{user:null})
+  /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
+  if (req.user) {
+    res.render('login', { user: req.user })
+  } else {
+    res.render('login', { user: null })
   }
 }
 
 /* screen for displaying dashboard */
 exports.userdashboard = (req, res) => {
-  if(req.user){
+  /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
+  /* social login */
+  if (req.user) {
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-  
+
       User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
 
-        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider ,user:req.user})
+        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user })
 
       })
-
     })
-  }else{
+  } else {
+    /* general user login */
     if (usersession == false) {
       if (req.body.email == 'admin@gmail.com') {
         User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-  
+
           User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-  
-            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider,user:null })
-  
+
+            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })
+
           })
-  
+
         })
-  
+
         usersession = true
       } else {
         res.redirect('back')
@@ -50,22 +53,22 @@ exports.userdashboard = (req, res) => {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
           //console.log(">>>>>>>>>>>>all user data", alluserdata)
-          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider,user:null })
+          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })
         })
       })
     }
   }
-  
+
 
 }
 
 /* displaying screen for add user */
 exports.registeruser = (req, res) => {
   if (usersession) {
-    
-      res.render('register')
-    
-    
+
+    res.render('register')
+
+
   } else {
     res.redirect('/login')
   }
@@ -122,7 +125,7 @@ exports.postregisteruser = (req, res) => {
 exports.edituser = (req, res) => {
   if (usersession) {
     User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(edituserdata => {
-       console.log(">>>>edituserdata",edituserdata)
+      console.log(">>>>edituserdata", edituserdata)
       res.render('useredit', { userdata: edituserdata })
     })
   } else {
@@ -145,7 +148,7 @@ exports.postedituser = (req, res) => {
       params['latitude'] = req.body.latitude;
       params['longitude'] = req.body.longitude;
       params['address'] = req.body.address;
-      console.log(">>params",params)
+      console.log(">>params", params)
 
       User.update(params, {
         where: {
@@ -159,7 +162,7 @@ exports.postedituser = (req, res) => {
               user_id: req.params.id
             }).then((userprofilepicdata) => {
               resize_image(element.filename)
-             // res.redirect('/dashboard')
+              // res.redirect('/dashboard')
 
             })
           });
@@ -178,19 +181,19 @@ exports.postedituser = (req, res) => {
 }
 /* delete user  */
 exports.deleteUser = (req, res) => {
-User.find({where:{id: req.params.id},include: [{ model: UserProfilepic }]}).then(userdata=>{
-  User.destroy({ where: { id: req.params.id } }).then(userdeletedata => {
-    userdata.profilepics.forEach(element=>{
-      console.log(">>>element",element)
-      fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
-      fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
+  User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(userdata => {
+    User.destroy({ where: { id: req.params.id } }).then(userdeletedata => {
+      userdata.profilepics.forEach(element => {
+        console.log(">>>element", element)
+        fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
+        fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
+      })
+
+      res.redirect('/dashboard')
     })
-   
-    res.redirect('/dashboard')
   })
-})
-  
- 
+
+
 }
 
 /* logout user */
