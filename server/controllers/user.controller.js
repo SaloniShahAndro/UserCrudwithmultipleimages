@@ -1,5 +1,4 @@
 
-
 const User = require('../models/user.model')
 const bcrypt = require('bcrypt')
 const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/* for using multer for uploading profilepic */
@@ -11,43 +10,62 @@ const fs = require('fs')
 
 /* First screen for login user */
 exports.getloginuser = (req, res) => {
-
-  res.render('login')
+  if(req.user){
+    res.render('login',{user:req.user})
+  }else{
+    res.render('login',{user:null})
+  }
 }
 
 /* screen for displaying dashboard */
 exports.userdashboard = (req, res) => {
-  if (usersession == false) {
-    if (req.body.email == 'admin@gmail.com') {
-      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-
-        User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-
-          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider })
-
-        })
-
-      })
-
-      usersession = true
-    } else {
-      res.redirect('back')
-    }
-  } else {
+  if(req.user){
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+  
       User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-        //console.log(">>>>>>>>>>>>all user data", alluserdata)
-        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider })
+
+        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider ,user:req.user})
+
       })
+
     })
+  }else{
+    if (usersession == false) {
+      if (req.body.email == 'admin@gmail.com') {
+        User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+  
+          User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
+  
+            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider,user:null })
+  
+          })
+  
+        })
+  
+        usersession = true
+      } else {
+        res.redirect('back')
+      }
+    } else {
+      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
+          //console.log(">>>>>>>>>>>>all user data", alluserdata)
+          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider,user:null })
+        })
+      })
+    }
   }
+  
 
 }
 
 /* displaying screen for add user */
 exports.registeruser = (req, res) => {
   if (usersession) {
-    res.render('register')
+    
+      res.render('register')
+    
+    
   } else {
     res.redirect('/login')
   }
@@ -141,7 +159,7 @@ exports.postedituser = (req, res) => {
               user_id: req.params.id
             }).then((userprofilepicdata) => {
               resize_image(element.filename)
-              res.redirect('/dashboard')
+             // res.redirect('/dashboard')
 
             })
           });
@@ -181,6 +199,8 @@ exports.logoutuser = (req, res) => {
   res.redirect('/login')
 }
 
+
+
 /* remove image from database and also from server when click on remove image button in upload profile */
 exports.removeimage = (req, res) => {
   UserProfilepic.find({ where: { id: req.params.id } }).then(userdeleteddata => {
@@ -191,7 +211,6 @@ exports.removeimage = (req, res) => {
     })
   })
 }
-
 
 /* function for resizing image */
 function resize_image(filename) {

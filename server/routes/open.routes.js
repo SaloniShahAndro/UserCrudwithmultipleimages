@@ -14,8 +14,14 @@ var Routes =[
     router.post('/temp/:id',controllers.postedituser),
     router.get('/logout',controllers.logoutuser),
     router.get('/removeimage/:id',controllers.removeimage),
-    
+   
+   
     
 ]
-
+function ensureAuthenticated(req, res, next) {
+    
+        if (req.isAuthenticated()) { return next(); }
+        res.redirect('/dashboard')
+   
+  }
 module.exports = Routes;

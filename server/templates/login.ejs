@@ -23,7 +23,12 @@
                 <button type="submit" class="btn btn-primary" >Login</button>
             
         </div>
-
+        <% if (!user) { %>
+        <a href="/auth/facebook"><button type="button">Facebook</button></a>
+        <a href="/auth/twitter"><button type="button">Twitter</button></a>
+        <% } else{ %>
+           
+            <% } %>
     </form>
 </div>
 
