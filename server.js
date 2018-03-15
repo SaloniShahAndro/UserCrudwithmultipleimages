@@ -22,7 +22,7 @@ passport.deserializeUser(function (obj, done) {
 passport.use(new FacebookStrategy({
   clientID: "152992018711553",
   clientSecret: "d13bf7d08e6ddc7d5cffcdeed97cc4e1",
-  callbackURL: "http://localhost:5515/auth/facebook/callback",
+  callbackURL: "http://localhost:5525/auth/facebook/callback",
   profileFields: ['id', 'email', 'first_name', 'last_name'],
 
 },
@@ -56,7 +56,7 @@ passport.use(new FacebookStrategy({
 passport.use(new TwitterStrategy({
   consumerKey: "0k7WVzfzDEqRv1dizG0rBN2Tk",
   consumerSecret: "iCE2zJLVqFUUrWUvgQ5YaHEGLEkvNUY5lb4jw9LtF6IgYAT98y",
-  callbackURL: "http://localhost:5515/auth/twitter/callback",
+  callbackURL: "http://localhost:5525/auth/twitter/callback",
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -86,7 +86,7 @@ passport.use(new TwitterStrategy({
 passport.use(new GoogleStrategy({
   clientID: "1059024881435-g04nv2b2m6rcdlsk1tcgfvsbdunufabe.apps.googleusercontent.com",
   clientSecret: "a_sqehmHu--3WWvkmmPUd8PL",
-  callbackURL: "http://localhost:5515/auth/google/callback",
+  callbackURL: "http://localhost:5525/auth/google/callback",
 
 },
   function (accessToken, refreshToken, profile, done) {
@@ -208,6 +208,6 @@ app.get('/logouts', function (req, res) {
   res.redirect('/login');
 });
 
-global.baseurl = 'http://localhost:5515/'
+global.baseurl = 'http://localhost:5525/'
 
-app.listen(5515, () => console.log('Example app listening on port 5515!'))
+app.listen(5525, () => console.log('Example app listening on port 5525!'))

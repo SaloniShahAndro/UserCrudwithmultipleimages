@@ -49,39 +49,30 @@ exports.userdashboard = (req, res) => {
     } else {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-          //console.log(">>>>>>>>>>>>all user data", alluserdata)
           res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })
         })
       })
     }
   }
-
-
 }
 
 /* displaying screen for add user */
 exports.registeruser = (req, res) => {
   if (usersession) {
-
     res.render('register')
-
-
   } else {
     res.redirect('/login')
   }
-
 }
 
 
 /* for submitting add user data  */
 exports.postregisteruser = (req, res) => {
-
   upload(req, res).then(() => {
     var params = {}
     params = req.body
     console.log(">>params", params)
     User.sync({ force: false }).then(() => {
-
       User.find({ where: { email: req.body.email } }).then(userdata => {
         if (userdata) {
           // res.send('user already exists')
@@ -93,17 +84,14 @@ exports.postregisteruser = (req, res) => {
             req.files.forEach(element => {
               //params['profilepicture'] = element.filename;
 
-              // resize_image(element.filename)/* for resizing image to display in dashboard */
-
+              // resize_image(element.filename)
 
               UserProfilepic.sync({ force: false }).then(() => {
                 UserProfilepic.create({
                   profilepicture: element.filename,
                   user_id: registerdata.id
                 }).then((userprofilepicdata) => {
-
-                  resize_image(userprofilepicdata.profilepicture)
-
+                  resize_image(userprofilepicdata.profilepicture)/* for resizing image to display in dashboard */
                 })
               });
             })
