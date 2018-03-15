@@ -20,8 +20,9 @@
 <div class="form-container">
     <h2>Register</h2>
 
-    
+
     <form method="post" action="/dashbord" id="registerform" enctype="multipart/form-data">
+
         <div class="form-group">
             <label for="firstname">First name</label>
             <input type="text" name="firstname" id="firstname" class="form-control" />
@@ -90,13 +91,14 @@
             <input type="text" id="us2-lat" /> Long.:
             <input type="text" id="us2-lon" />
         </div>
+        <div id="signupalert" style="display:none" class="alert"><span> Registered Successfully </span></div>
+
         <div class="form-group col-sm-12">
             <button type="submit" class="btn btn-primary" id="submit-all">Register</button>
 
         </div>
-
     </form>
-    
+
 </div>
 
 <script type="text/javascript">
@@ -130,16 +132,16 @@
             startDate: "03/06/2018"
 
         })
-        .on('changeDate', function (e) {
+            .on('changeDate', function (e) {
 
 
-            var stringdate = JSON.stringify(e.date.toString());
-            stringdate = stringdate.split(" ");
-         datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
-            console.log(">>>>ee", datess)
-            datess: $('#date').val();
-            console.log(">>>>date value", $('#date').val())
-        })
+                var stringdate = JSON.stringify(e.date.toString());
+                stringdate = stringdate.split(" ");
+                datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
+                console.log(">>>>ee", datess)
+                datess: $('#date').val();
+                console.log(">>>>date value", $('#date').val())
+            })
 
         /* for converting mmm to mm for date */
         function getMonthFromString(mon) {
@@ -229,21 +231,26 @@
                     // Make sure that the form isn't actually being sent.
                     e.preventDefault();
                     e.stopPropagation();
-                    if (myDropzone.getQueuedFiles().length > 0) {
-                        myDropzone.processQueue();
-                        if ($("#registerform").valid()) {
+                    if ($("#registerform").valid()) {
+                        if (myDropzone.getQueuedFiles().length > 0) {
+                            myDropzone.processQueue();
+
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000","text-align": "center" })
+                            $("#signupalert span").text("Registered Successfully")
                             setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
+
+                        } else {
+                            myDropzone.uploadFiles([]);
+                           $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000","text-align": "center"  })
+                            $("#signupalert span").text("Please upload profile picture")
                         }
-                    } else {
-                        myDropzone.uploadFiles([]);
-                        alert("please upload profile picture")
                     }
 
                 });
 
                 //send all the form data along with the files:
                 this.on("sendingmultiple", function (data, xhr, formData) {
-                    
+
                     formData.append("firstname", $("#firstname").val());
                     formData.append("lastname", $("#lastname").val());
                     formData.append("email", $("#email").val());
@@ -255,7 +262,7 @@
                     formData.append("latitude", $("#us2-lat").val());
                     formData.append("longitude", $("#us2-lon").val());
                     formData.append("address", $("#us2-address").val());
-                    
+
                 });
             },
             removedfile: function (file) {

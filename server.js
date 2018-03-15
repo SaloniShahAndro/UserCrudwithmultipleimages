@@ -57,9 +57,6 @@ passport.use(new TwitterStrategy({
   consumerKey: "0k7WVzfzDEqRv1dizG0rBN2Tk",
   consumerSecret: "iCE2zJLVqFUUrWUvgQ5YaHEGLEkvNUY5lb4jw9LtF6IgYAT98y",
   callbackURL: "http://localhost:5515/auth/twitter/callback",
-
-
-
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {

@@ -107,31 +107,31 @@
     <button type="submit" class="btn btn-primary" id="submit-all">Update</button>
 
 </div>
+<div id="signupalert" style="display:none" class="alert">
+    <span></span>
+</div>
 
 </form>
 </div>
 
 <script type="text/javascript">
+    /* dropzone parameters */
     Dropzone.autoDiscover = false;
     function paramNameForSend() {
         return "profilepicture";
     }
     $(document).ready(function () {
+        /* getting and converting date */
         var elem = document.getElementById("date");
         var databasedate = "<%= userdata.date%>";
         databasedate = databasedate.split("-")
-
         elem.value = databasedate[1] + "/" + databasedate[2] + "/" + databasedate[0]
         $('#datePicker').datepicker({
             autoclose: true,
             format: "mm/dd/yyyy",
             startDate: "03/06/2018",
-
-
         })
             .on('changeDate', function (e) {
-
-
                 var stringdate = JSON.stringify(e.date.toString());
                 stringdate = stringdate.split(" ");
                 var datess = stringdate[2] + "/" + getMonthFromString(stringdate[1]) + "/" + stringdate[3]
@@ -151,13 +151,6 @@
         }
 
         /* location picker */
-        // var lat = document.getElementById("us2-lat");
-        // lat.value = "<%= userdata.latitude%>";
-        // var lon = document.getElementById("us2-lon");
-        // lon.value = "<%= userdata.longitude%>";
-        // var address = document.getElementById("us2-address");
-        // address.value = "<%= userdata.address%>";
-
         $('#us2').locationpicker({
             location: {
                 latitude: $('#us2-lat').val(),
@@ -168,11 +161,6 @@
             radius: 0,
             onchanged: function (currentLocation, radius, isMarkerDropped) {
                 var addressComponents = $(this).locationpicker('map').location.addressComponents;
-
-                console.log(">>currentlocation", currentLocation);  //latlon  
-                console.log(">>lat", currentLocation.latitude)
-                console.log(">>long", currentLocation.longitude)
-                console.log(">>country", addressComponents.country)
                 updateControls(addressComponents); //Data
             },
             inputBinding: {
@@ -180,8 +168,6 @@
                 longitudeInput: $('#us2-lon'),
                 radiusInput: $('#us2-radius'),
                 locationNameInput: $('#us2-address')
-
-
             },
 
         });
@@ -189,16 +175,14 @@
             console.log(addressComponents);
         }
 
+        /* to check if form is valid or not */
         $("#updateform").validate({
-
             rules: {
                 firstname: { required: true },
                 lastname: { required: true },
                 description: { required: true },
                 profilepicture: {
-
                     accept: "image/jpg ,image/jpeg, image/png",
-
                 }
             },
             errorPlacement: function (error, element) {
@@ -210,6 +194,7 @@
             }
         });
 
+        /* Drop zone image upload and form submit */
         var myDropzone = new Dropzone("#profilepicture", {
             url: '/temp/<%= userdata.id%>',
             maxFilesize: 5, // MB
@@ -256,8 +241,6 @@
                     formData.append("latitude", $("#us2-lat").val());
                     formData.append("longitude", $("#us2-lon").val());
                     formData.append("address", $("#us2-address").val());
-
-
                 });
                 var removeButton = Dropzone.createElement("<button>Remove file</button>");
                 // removeButton.addEventListener(removedfile);
@@ -280,12 +263,10 @@
             }
         });
 
+        /* remove already added images */
         $(".removeimage").click(function () {
-
             y = confirm('Do you want to delete?');
             var id = $(this).attr('id')
-
-
             if (!y) {
                 return false;
             } else {

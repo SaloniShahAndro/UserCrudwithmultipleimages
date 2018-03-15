@@ -6,8 +6,6 @@ const Jimp = require("jimp");/* for resizing image */
 const UserProfilepic = require('../models/profilepic.model')
 const fs = require('fs')
 
-
-
 /* First screen for login user */
 exports.getloginuser = (req, res) => {
   /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
@@ -33,8 +31,9 @@ exports.userdashboard = (req, res) => {
     })
   } else {
     /* general user login */
+  
     if (usersession == false) {
-      if (req.body.email == 'admin@gmail.com') {
+      
         User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
 
           User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
@@ -46,9 +45,7 @@ exports.userdashboard = (req, res) => {
         })
 
         usersession = true
-      } else {
-        res.redirect('back')
-      }
+      
     } else {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
@@ -110,6 +107,7 @@ exports.postregisteruser = (req, res) => {
                 })
               });
             })
+            
             res.redirect('/dashboard')
 
           });
