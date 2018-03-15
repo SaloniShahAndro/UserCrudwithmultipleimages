@@ -9,7 +9,11 @@
     <button type="button">Add User</button>
 </a>
 <% }else{ %>
+    <% if(user.displayName){ %>
     <label>Hello <%= user.displayName %></label>
+    <% }else{ %>
+        <label>Hello <%= user.name.givenName %> <%= user.name.familyName %> </label>
+        <% } %>
     <% } %>
 
 <% if(!user){ %>

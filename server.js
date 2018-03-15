@@ -2,6 +2,8 @@ const express = require('express')
 const passport = require('passport') /* For authentication */
 const FacebookStrategy = require('passport-facebook').Strategy/* For facebook integration */
 const TwitterStrategy = require('passport-twitter').Strategy/* For twitter integration */
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;  
+
 const app = express()
 const session = require('express-session');
 var Usermodel = require('./server/models/user.model')/* normal user model */
@@ -30,9 +32,11 @@ passport.use(new FacebookStrategy({
       SUsermodel.sync({ force: false }).then(() => {
         SUsermodel.findOne({ where: { 'userid': profile.id } }).then((users) => {
           if (users) {
+            console.log(">>profile",  profile )
             return done(null, users);
             console.log("User already exists in database");
           } else {
+            
             console.log(">>accessToken",  profile.name.givenName +" "+ profile.name.familyName )
             console.log("There is no such user, adding now");
              var names =  profile.name.givenName+" "+ profile.name.familyName 
@@ -55,6 +59,7 @@ passport.use(new TwitterStrategy({
   callbackURL: "http://localhost:5515/auth/twitter/callback",
 
 
+
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -69,6 +74,39 @@ passport.use(new TwitterStrategy({
             console.log("There is no such user, adding now");
             // var names =  profile.name.givenName+" "+ profile.name.familyName 
             SUsermodel.create({ name: profile.displayName,userid:profile.id, accesstoken: accessToken }, function (err, user) {
+              if (err) { return done(err); }
+              return done(null, user);
+            });
+          }
+        });
+
+        return done(null, profile);
+      })
+    })
+  }
+));
+/* google passport stratergy */
+passport.use(new GoogleStrategy({
+  clientID: "1059024881435-g04nv2b2m6rcdlsk1tcgfvsbdunufabe.apps.googleusercontent.com",
+  clientSecret: "a_sqehmHu--3WWvkmmPUd8PL",
+  callbackURL: "http://localhost:5515/auth/google/callback",
+
+},
+  function (accessToken, refreshToken, profile, done) {
+    process.nextTick(function () {
+      //Check whether the User exists or not using profile.id
+      SUsermodel.sync({ force: false }).then(() => {
+        SUsermodel.findOne({ where: { 'userid': profile.id } }).then((users) => {
+          if (users) {
+            console.log(">>profile",  profile )
+            return done(null, users);
+            console.log("User already exists in database");
+          } else {
+            
+            console.log(">>accessToken",  profile.name.givenName +" "+ profile.name.familyName )
+            console.log("There is no such user, adding now");
+             var names =  profile.name.givenName+" "+ profile.name.familyName 
+            SUsermodel.create({ name: names, userid: profile.id, accesstoken: accessToken,email: (profile.emails[0].value || '').toLowerCase() }, function (err, user) {
               if (err) { return done(err); }
               return done(null, user);
             });
@@ -160,6 +198,13 @@ app.get('/auth/twitter/callback',
   function (req, res) {
     res.redirect('/register');
   });
+
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', passport.authenticate('google', {  
+  successRedirect: '/dashboard',
+  failureRedirect: '/login',
+}));
 /* logout from social login */
 app.get('/logouts', function (req, res) {
   req.logout();
