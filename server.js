@@ -84,8 +84,8 @@ passport.use(new TwitterStrategy({
 ));
 /* google passport stratergy */
 passport.use(new GoogleStrategy({
-  clientID: "1059024881435-g04nv2b2m6rcdlsk1tcgfvsbdunufabe.apps.googleusercontent.com",
-  clientSecret: "a_sqehmHu--3WWvkmmPUd8PL",
+  clientID: "1059024881435-fnvi10doh52q2r690n9udonetoan5r1l.apps.googleusercontent.com",
+  clientSecret: "BiMAy98TMaI-1FLnq6z3o3UE",
   callbackURL: "http://localhost:5525/auth/google/callback",
 
 },
