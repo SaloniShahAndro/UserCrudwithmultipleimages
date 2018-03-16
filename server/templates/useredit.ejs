@@ -103,13 +103,15 @@
     <input type="text" id="us2-lat" value="<%= userdata.latitude%>" name="latitude" /> Long.:
     <input type="text" id="us2-lon" value="<%= userdata.longitude%>" name="longitude" />
 </div>
+<div id="signupalert" style="display:none" class="alert">
+    <span> </span>
+</div>
+
 <div class="form-group">
     <button type="submit" class="btn btn-primary" id="submit-all">Update</button>
 
 </div>
-<div id="signupalert" style="display:none" class="alert">
-    <span></span>
-</div>
+
 
 </form>
 </div>
@@ -117,6 +119,7 @@
 <script type="text/javascript">
     /* dropzone parameters */
     Dropzone.autoDiscover = false;
+    var somethingChanged = false;
     function paramNameForSend() {
         return "profilepicture";
     }
@@ -193,7 +196,10 @@
                 }
             }
         });
-
+        $("form :input").change(function () {
+            // $(this).closest('form').data('changed', true);
+            somethingChanged = true;
+        });
         /* Drop zone image upload and form submit */
         var myDropzone = new Dropzone("#profilepicture", {
             url: '/temp/<%= userdata.id%>',
@@ -210,22 +216,45 @@
             init: function () {
                 var myDropzone = this;
 
-                document.getElementById("submit-all").addEventListener("click", function (e) {
+                // document.getElementById("submit-all").addEventListener("click", function (e) {
+                //     // Make sure that the form isn't actually being sent.
+                //     e.preventDefault();
+                //     e.stopPropagation();
+
+                //     /* for checking if files are added or not in dropzone */
+                //     if (myDropzone.getQueuedFiles().length > 0) {
+                //         myDropzone.processQueue();
+                //     } else {
+                //         myDropzone.uploadFiles([]);
+                //         $("#updateform").submit()//for submitting files even if image is not added in dropzone
+
+                //     }
+
+
+                //     if ($("#updateform").valid()) {
+                //         setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
+                //     }
+                // });
+
+                $("#submit-all").click(function (e) {
                     // Make sure that the form isn't actually being sent.
                     e.preventDefault();
                     e.stopPropagation();
-
-                    /* for checking if files are added or not in dropzone */
-                    if (myDropzone.getQueuedFiles().length > 0) {
-                        myDropzone.processQueue();
-                    } else {
-                        myDropzone.uploadFiles([]);
-                        $("#updateform").submit()//for submitting files even if image is not added in dropzone
-
-                    }
-
-
                     if ($("#updateform").valid()) {
+
+                        /* for checking if files are added or not in dropzone */
+                        if (myDropzone.getQueuedFiles().length > 0) {
+                            myDropzone.processQueue();
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                            $("#signupalert span").text("Updated Successfully")
+                        } else {
+                            myDropzone.uploadFiles([]);
+                            $("#updateform").submit()//for submitting files even if image is not added in dropzone
+                        }
+                        if (somethingChanged) {
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                            $("#signupalert span").text("Updated Successfully")
+                        } 
                         setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
                     }
                 });
@@ -265,16 +294,17 @@
 
         /* remove already added images */
         $(".removeimage").click(function () {
-            y = confirm('Do you want to delete?');
+            y = confirm('Do you want to delete?'); 
             var id = $(this).attr('id')
             if (!y) {
                 return false;
             } else {
+                somethingChanged = true;
                 $.ajax({
                     method: 'GET',
                     url: '/removeimage/' + id,
                     success: function (result) {
-                        console.log("delted", id)
+                        console.log("delted", id)  
                         window.location.reload();
                     }
                 })

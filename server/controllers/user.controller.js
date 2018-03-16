@@ -5,6 +5,8 @@ const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/*
 const Jimp = require("jimp");/* for resizing image */
 const UserProfilepic = require('../models/profilepic.model')
 const fs = require('fs')
+var pagination = require('pagination');
+
 
 /* First screen for login user */
 exports.getloginuser = (req, res) => {
@@ -20,6 +22,9 @@ exports.getloginuser = (req, res) => {
 exports.userdashboard = (req, res) => {
   /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
   /* social login */
+  req.body.start=0,
+  req.body.limit=5
+  console.log(">>params in dashboard",req.body)
   if (req.user) {
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
 
@@ -33,19 +38,12 @@ exports.userdashboard = (req, res) => {
     /* general user login */
   
     if (usersession == false) {
-      
         User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-
           User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-
-            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })
-
+            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })   
           })
-
         })
-
         usersession = true
-      
     } else {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
