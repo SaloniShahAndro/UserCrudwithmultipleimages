@@ -182,7 +182,7 @@ app.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }))
 
 /* redirecting callback user after facebook login */
 app.get('/auth/facebook/callback',
-  passport.authenticate('facebook', { successRedirect: '/dashboard', failureRedirect: '/login' }),
+  passport.authenticate('facebook', { successRedirect: '/dashboard/1', failureRedirect: '/login' }),
   function (req, res) {
     res.redirect('/register');
   });
@@ -191,7 +191,7 @@ app.get('/auth/twitter', passport.authenticate('twitter'));
 
 /* redirecting callback user after twitter login */
 app.get('/auth/twitter/callback',
-  passport.authenticate('twitter', { successRedirect: '/dashboard', failureRedirect: '/login' }),
+  passport.authenticate('twitter', { successRedirect: '/dashboard/1', failureRedirect: '/login' }),
   function (req, res) {
     res.redirect('/register');
   });
@@ -199,7 +199,7 @@ app.get('/auth/twitter/callback',
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', passport.authenticate('google', {  
-  successRedirect: '/dashboard',
+  successRedirect: '/dashboard/1',
   failureRedirect: '/login',
 }));
 /* logout from social login */

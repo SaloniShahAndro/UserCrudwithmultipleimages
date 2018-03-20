@@ -5,7 +5,13 @@ const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/*
 const Jimp = require("jimp");/* for resizing image */
 const UserProfilepic = require('../models/profilepic.model')
 const fs = require('fs')
-var pagination = require('pagination');
+
+var totalRec = 0,
+  pageSize = 6,
+  pageCount = 0;
+var start = 0;
+var currentPage = 1;
+
 
 
 /* First screen for login user */
@@ -21,10 +27,10 @@ exports.getloginuser = (req, res) => {
 /* screen for displaying dashboard */
 exports.userdashboard = (req, res) => {
   /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
+  req.body.start = 0,
+    req.body.limit = 5
+  console.log(">>params in dashboard", req.body)
   /* social login */
-  req.body.start=0,
-  req.body.limit=5
-  console.log(">>params in dashboard",req.body)
   if (req.user) {
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
 
@@ -36,14 +42,14 @@ exports.userdashboard = (req, res) => {
     })
   } else {
     /* general user login */
-  
+
     if (usersession == false) {
-        User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-          User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })   
-          })
+      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
+          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null })
         })
-        usersession = true
+      })
+      usersession = true
     } else {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
@@ -52,6 +58,64 @@ exports.userdashboard = (req, res) => {
       })
     }
   }
+}
+
+exports.userdashboardPage = (req, res) => {
+  var perPage = 5
+  var page = req.params.page
+
+  /* social login */
+  if (req.user) {
+
+    // console.log(">>alluserdata",alluserdata)
+    User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+
+      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.count().then(count => {
+          //console.log(">>count",count)
+          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
+        })
+
+      })
+    })
+  } else {
+    /* general user login */
+
+    if (usersession == false) {
+      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+          User.count().then(count => {
+            console.log(">>>>count in login",count)
+            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+          })
+        })
+      })
+      usersession = true
+    } else {
+      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+          User.count().then(count => {
+          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+          })
+        })
+      })
+    }
+  }
+
+  // User
+  // .find({})
+  // .skip((perPage * page) - perPage)
+  // .limit(perPage)
+  // .exec(function(err, alluserdataslider) {
+  //     User.count().exec(function(err, count) {
+  //         if (err) return next(err)
+  //         res.render('dashboard', {
+  //           alluserdataslider: alluserdataslider,
+  //             current: page,
+  //             pages: Math.ceil(count / perPage)
+  //         })
+  //     })
+  // })
 }
 
 /* displaying screen for add user */
@@ -93,8 +157,8 @@ exports.postregisteruser = (req, res) => {
                 })
               });
             })
-            
-            res.redirect('/dashboard')
+
+            res.redirect('/dashboard/1')
 
           });
 
@@ -173,7 +237,7 @@ exports.deleteUser = (req, res) => {
         fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
       })
 
-      res.redirect('/dashboard')
+      res.redirect('/dashboard/1')
     })
   })
 

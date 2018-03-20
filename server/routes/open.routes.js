@@ -8,7 +8,8 @@ var Routes =[
     router.get('/login',controllers.getloginuser),//1
     router.post('/dashbord',controllers.postregisteruser),//4
     router.get('/dashboard',controllers.userdashboard),//2
-    router.post('/dashboard',controllers.userdashboard),
+    router.get('/dashboard/:page',controllers.userdashboardPage),//2
+    router.post('/dashboard/:page',controllers.userdashboardPage),
     router.get('/user/delete/:id',controllers.deleteUser),
     router.get('/useredit/:id',controllers.edituser),//5
     router.post('/temp/:id',controllers.postedituser),

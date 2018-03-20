@@ -6,7 +6,7 @@
 <div class="form-container">
     <h2>Login</h2>
 
-    <form method="post" action="/dashboard" id="loginform">
+    <form method="post" action="/dashboard/1" id="loginform">
 
 
         <div class="form-group">
@@ -68,12 +68,12 @@
             e.stopPropagation();
             $.ajax({
                 method: 'GET',
-                url: '/dashboard',
+                url: '/dashboard/1',
                 success: function (result) {
                     if ($("#email").val() == 'admin@gmail.com' && $("#password").val() == '123456') {
                         $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
                         $("#signupalert span").text("Login Successfully")
-                        setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
+                        setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
                     } else {
                         $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
                         $("#signupalert span").text("Please try again")
