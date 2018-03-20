@@ -43,11 +43,11 @@
                                                     <% if(alluserdataslider[i].profilepics[j].profilepicture) { %>
                                                         <% if(j>0){%>
                                                             <a class="grouped_elements" rel="<%= alluserdataslider[i].profilepics[j].user_id %>" style="display:none" href="/assets/multiimage/<%= alluserdataslider[i].profilepics[j].profilepicture %>">
-                                                                <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdata[i].id %>" />
+                                                                <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdataslider[i].id %>" />
                                                             </a>
                                                         <% }else {%>
                                                             <a class="grouped_elements" rel="<%= alluserdataslider[i].profilepics[j].user_id %>" style="display:block" href="/assets/multiimage/<%= alluserdataslider[i].profilepics[j].profilepicture %>">
-                                                                <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdata[i].id %>" />
+                                                                <img src="/assets/tmp/<%= alluserdataslider[i].profilepics[j].profilepicture %>" id="<%= alluserdataslider[i].id %>" />
                                                             </a>
                                                             <% } %>
                                                        

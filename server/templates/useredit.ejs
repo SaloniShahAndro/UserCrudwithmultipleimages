@@ -215,27 +215,6 @@
 
             init: function () {
                 var myDropzone = this;
-
-                // document.getElementById("submit-all").addEventListener("click", function (e) {
-                //     // Make sure that the form isn't actually being sent.
-                //     e.preventDefault();
-                //     e.stopPropagation();
-
-                //     /* for checking if files are added or not in dropzone */
-                //     if (myDropzone.getQueuedFiles().length > 0) {
-                //         myDropzone.processQueue();
-                //     } else {
-                //         myDropzone.uploadFiles([]);
-                //         $("#updateform").submit()//for submitting files even if image is not added in dropzone
-
-                //     }
-
-
-                //     if ($("#updateform").valid()) {
-                //         setTimeout(function () { window.location.href = "/dashboard"; }, 1000);
-                //     }
-                // });
-
                 $("#submit-all").click(function (e) {
                     // Make sure that the form isn't actually being sent.
                     e.preventDefault();

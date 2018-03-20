@@ -59,63 +59,41 @@ exports.userdashboard = (req, res) => {
     }
   }
 }
-
+/* pagination on dashboard */
 exports.userdashboardPage = (req, res) => {
   var perPage = 5
   var page = req.params.page
 
   /* social login */
   if (req.user) {
-
-    // console.log(">>alluserdata",alluserdata)
     User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-
-      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.count().then(count => {
-          //console.log(">>count",count)
-          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
+          res.render('dashboard', { alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
         })
-
-      })
+      //})
     })
   } else {
     /* general user login */
-
     if (usersession == false) {
-      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
           User.count().then(count => {
-            console.log(">>>>count in login",count)
-            res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
           })
         })
-      })
+      //})
       usersession = true
     } else {
-      User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
           User.count().then(count => {
-          res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+          res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
           })
         })
-      })
+     // })
     }
   }
-
-  // User
-  // .find({})
-  // .skip((perPage * page) - perPage)
-  // .limit(perPage)
-  // .exec(function(err, alluserdataslider) {
-  //     User.count().exec(function(err, count) {
-  //         if (err) return next(err)
-  //         res.render('dashboard', {
-  //           alluserdataslider: alluserdataslider,
-  //             current: page,
-  //             pages: Math.ceil(count / perPage)
-  //         })
-  //     })
-  // })
 }
 
 /* displaying screen for add user */
@@ -133,7 +111,6 @@ exports.postregisteruser = (req, res) => {
   upload(req, res).then(() => {
     var params = {}
     params = req.body
-    console.log(">>params", params)
     User.sync({ force: false }).then(() => {
       User.find({ where: { email: req.body.email } }).then(userdata => {
         if (userdata) {
@@ -145,9 +122,7 @@ exports.postregisteruser = (req, res) => {
           User.create(params).then(registerdata => {
             req.files.forEach(element => {
               //params['profilepicture'] = element.filename;
-
               // resize_image(element.filename)
-
               UserProfilepic.sync({ force: false }).then(() => {
                 UserProfilepic.create({
                   profilepicture: element.filename,
@@ -157,11 +132,8 @@ exports.postregisteruser = (req, res) => {
                 })
               });
             })
-
             res.redirect('/dashboard/1')
-
           });
-
         }
       })
     });
@@ -173,7 +145,6 @@ exports.postregisteruser = (req, res) => {
 exports.edituser = (req, res) => {
   if (usersession) {
     User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(edituserdata => {
-      console.log(">>>>edituserdata", edituserdata)
       res.render('useredit', { userdata: edituserdata })
     })
   } else {
@@ -211,15 +182,11 @@ exports.postedituser = (req, res) => {
             }).then((userprofilepicdata) => {
               resize_image(element.filename)
               // res.redirect('/dashboard')
-
             })
           });
         })
-
       })
     })
-
-
   } else {
     res.redirect('/login')
   }
@@ -232,11 +199,9 @@ exports.deleteUser = (req, res) => {
   User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(userdata => {
     User.destroy({ where: { id: req.params.id } }).then(userdeletedata => {
       userdata.profilepics.forEach(element => {
-        console.log(">>>element", element)
         fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
         fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
       })
-
       res.redirect('/dashboard/1')
     })
   })
