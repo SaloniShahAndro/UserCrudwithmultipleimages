@@ -9,6 +9,9 @@ const session = require('express-session');
 var Usermodel = require('./server/models/user.model')/* normal user model */
 var UserPicmodel = require('./server/models/profilepic.model')/* model For multiple images */
 var SUsermodel = require('./server/models/social.user.model')/*Social user model*/
+const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
+const csv = require('csv')
+var stream = fs.createReadStream("./server/csv.csv");
 
 // Passport session setup.
 passport.serializeUser(function (user, done) {
@@ -156,16 +159,16 @@ app.get('/add', (req, res) => {
   /* to create user admin */
   Usermodel.sync({ force: false }).then(() => {
 
-    Usermodel.create({
-      firstname: 'admin',
-      lastname: 'sadmin',
-      email: 'admin@gmail.com',
-      password: '123456',
-      gender: 'female',
-      description: 'dsfsfsdfdsf',
-      status: 'active',
-      profilepicture: 'abc.jpg'
-    });
+    // Usermodel.create({
+    //   firstname: 'admin',
+    //   lastname: 'sadmin',
+    //   email: 'admin@gmail.com',
+    //   password: '123456',
+    //   gender: 'female',
+    //   description: 'dsfsfsdfdsf',
+    //   status: 'active',
+    //   profilepicture: 'abc.jpg'
+    // });
   })
 
   UserPicmodel.sync({ force: false }).then(() => {
@@ -174,6 +177,50 @@ app.get('/add', (req, res) => {
       user_id: 1
     })
   })
+
+  var parser = csv.parse({
+    delimiter: ',',
+    columns: true
+  })
+
+  // var csvStream = csv()
+  //   .on("data", function (data) {
+  //     var resultObj = {
+  //       firstname: data['firstname'],
+  //       lastname: data['lastname'],
+
+  //     }
+  //     Usermodel.create(resultObj)
+  //     console.log(data);
+  //   })
+  //   .on("end", function () {
+  //     console.log("done");
+  //   });
+
+    var transform = csv.transform(function(row) {
+      var resultObj = {
+        firstname: row['firstname'],
+        lastname: row['lastname'],
+        email:row['email'],
+        password:row['password'],
+        gender:row['gender'],
+        description:row['description'],
+        status:row['status'],
+        date:row['date'],
+        latitude:row['latitude'],
+        longitude:row['longitude'],
+        address:row['address']
+      }
+      Usermodel.create(resultObj)
+          .then(function() {
+              console.log('>>>>>>>>>>>.Record created')
+          })
+          .catch(function(err) {
+              console.log('Error encountered: ' + err)
+          })
+  })
+  stream.pipe(parser).pipe(transform);
+
 })
 
 global.baseurl = 'http://localhost:5525/'
