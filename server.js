@@ -1,8 +1,8 @@
 const express = require('express')
-const passport = require('passport') /* For authentication */
+global.passport = require('passport') /* For authentication */
 const FacebookStrategy = require('passport-facebook').Strategy/* For facebook integration */
 const TwitterStrategy = require('passport-twitter').Strategy/* For twitter integration */
-var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;  
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 const app = express()
 const session = require('express-session');
@@ -32,15 +32,15 @@ passport.use(new FacebookStrategy({
       SUsermodel.sync({ force: false }).then(() => {
         SUsermodel.findOne({ where: { 'userid': profile.id } }).then((users) => {
           if (users) {
-            console.log(">>profile",  profile )
+            console.log(">>profile", profile)
             return done(null, users);
             console.log("User already exists in database");
           } else {
-            
-            console.log(">>accessToken",  profile.name.givenName +" "+ profile.name.familyName )
+
+            console.log(">>accessToken", profile.name.givenName + " " + profile.name.familyName)
             console.log("There is no such user, adding now");
-             var names =  profile.name.givenName+" "+ profile.name.familyName 
-            SUsermodel.create({ name: names, userid: profile.id, accesstoken: accessToken,email: (profile.emails[0].value || '').toLowerCase() }, function (err, user) {
+            var names = profile.name.givenName + " " + profile.name.familyName
+            SUsermodel.create({ name: names, userid: profile.id, accesstoken: accessToken, email: (profile.emails[0].value || '').toLowerCase() }, function (err, user) {
               if (err) { return done(err); }
               return done(null, user);
             });
@@ -70,7 +70,7 @@ passport.use(new TwitterStrategy({
             console.log(">>accessToken", profile)
             console.log("There is no such user, adding now");
             // var names =  profile.name.givenName+" "+ profile.name.familyName 
-            SUsermodel.create({ name: profile.displayName,userid:profile.id, accesstoken: accessToken }, function (err, user) {
+            SUsermodel.create({ name: profile.displayName, userid: profile.id, accesstoken: accessToken }, function (err, user) {
               if (err) { return done(err); }
               return done(null, user);
             });
@@ -95,15 +95,14 @@ passport.use(new GoogleStrategy({
       SUsermodel.sync({ force: false }).then(() => {
         SUsermodel.findOne({ where: { 'userid': profile.id } }).then((users) => {
           if (users) {
-            console.log(">>profile",  profile )
+            console.log(">>profile", profile)
             return done(null, users);
             console.log("User already exists in database");
           } else {
-            
-            console.log(">>accessToken",  profile.name.givenName +" "+ profile.name.familyName )
+            console.log(">>accessToken", profile.name.givenName + " " + profile.name.familyName)
             console.log("There is no such user, adding now");
-             var names =  profile.name.givenName+" "+ profile.name.familyName 
-            SUsermodel.create({ name: names, userid: profile.id, accesstoken: accessToken,email: (profile.emails[0].value || '').toLowerCase() }, function (err, user) {
+            var names = profile.name.givenName + " " + profile.name.familyName
+            SUsermodel.create({ name: names, userid: profile.id, accesstoken: accessToken, email: (profile.emails[0].value || '').toLowerCase() }, function (err, user) {
               if (err) { return done(err); }
               return done(null, user);
             });
@@ -176,37 +175,6 @@ app.get('/add', (req, res) => {
     })
   })
 })
-
-/* redirecting user after facebook login */
-app.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }));
-
-/* redirecting callback user after facebook login */
-app.get('/auth/facebook/callback',
-  passport.authenticate('facebook', { successRedirect: '/dashboard/1', failureRedirect: '/login' }),
-  function (req, res) {
-    res.redirect('/register');
-  });
-/* redirecting user after twitter login */
-app.get('/auth/twitter', passport.authenticate('twitter'));
-
-/* redirecting callback user after twitter login */
-app.get('/auth/twitter/callback',
-  passport.authenticate('twitter', { successRedirect: '/dashboard/1', failureRedirect: '/login' }),
-  function (req, res) {
-    res.redirect('/register');
-  });
-
-  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-app.get('/auth/google/callback', passport.authenticate('google', {  
-  successRedirect: '/dashboard/1',
-  failureRedirect: '/login',
-}));
-/* logout from social login */
-app.get('/logouts', function (req, res) {
-  req.logout();
-  res.redirect('/login');
-});
 
 global.baseurl = 'http://localhost:5525/'
 

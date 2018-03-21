@@ -1,17 +1,10 @@
 
-const User = require('../models/user.model')
-const bcrypt = require('bcrypt')
+const User = require('../models/user.model')/* model class */
+const bcrypt = require('bcrypt')/* for encrypting password */
 const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/* for using multer for uploading profilepic */
 const Jimp = require("jimp");/* for resizing image */
-const UserProfilepic = require('../models/profilepic.model')
-const fs = require('fs')
-
-var totalRec = 0,
-  pageSize = 6,
-  pageCount = 0;
-var start = 0;
-var currentPage = 1;
-
+const UserProfilepic = require('../models/profilepic.model')/* model class for pictures */
+const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
 
 
 /* First screen for login user */
@@ -33,16 +26,12 @@ exports.userdashboard = (req, res) => {
   /* social login */
   if (req.user) {
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-
       User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-
-        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user })
-
+      res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user })
       })
     })
   } else {
     /* general user login */
-
     if (usersession == false) {
       User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
         User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
@@ -59,6 +48,7 @@ exports.userdashboard = (req, res) => {
     }
   }
 }
+
 /* pagination on dashboard */
 exports.userdashboardPage = (req, res) => {
   var perPage = 5
@@ -105,7 +95,6 @@ exports.registeruser = (req, res) => {
   }
 }
 
-
 /* for submitting add user data  */
 exports.postregisteruser = (req, res) => {
   upload(req, res).then(() => {
@@ -132,7 +121,7 @@ exports.postregisteruser = (req, res) => {
                 })
               });
             })
-            res.redirect('/dashboard/1')
+            //res.redirect('/dashboard/1')
           });
         }
       })
@@ -190,10 +179,8 @@ exports.postedituser = (req, res) => {
   } else {
     res.redirect('/login')
   }
-
-
-
 }
+
 /* delete user  */
 exports.deleteUser = (req, res) => {
   User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(userdata => {
@@ -205,8 +192,6 @@ exports.deleteUser = (req, res) => {
       res.redirect('/dashboard/1')
     })
   })
-
-
 }
 
 /* logout user */
@@ -214,8 +199,6 @@ exports.logoutuser = (req, res) => {
   usersession = false
   res.redirect('/login')
 }
-
-
 
 /* remove image from database and also from server when click on remove image button in upload profile */
 exports.removeimage = (req, res) => {
