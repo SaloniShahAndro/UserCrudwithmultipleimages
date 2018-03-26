@@ -5,6 +5,11 @@ const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/*
 const Jimp = require("jimp");/* for resizing image */
 const UserProfilepic = require('../models/profilepic.model')/* model class for pictures */
 const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
+var phantom = require('phantom');
+const path = require('path');
+// var pdf = require('html-pdf');
+// var html = fs.readFileSync(path.resolve(__dirname, '../templates/dashboard.ejs'), 'utf8');
+// var options = { format: 'Letter' };
 
 
 /* First screen for login user */
@@ -27,7 +32,7 @@ exports.userdashboard = (req, res) => {
   if (req.user) {
     User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
       User.findAll({ include: [{ model: UserProfilepic }] }).then(alluserdataslider => {
-      res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user })
+        res.render('dashboard', { alluserdata: alluserdata, alluserdataslider: alluserdataslider, user: req.user })
       })
     })
   } else {
@@ -57,31 +62,31 @@ exports.userdashboardPage = (req, res) => {
   /* social login */
   if (req.user) {
     User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        User.count().then(count => {
-          res.render('dashboard', { alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
-        })
+      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+      User.count().then(count => {
+        res.render('dashboard', { alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
+      })
       //})
     })
   } else {
     /* general user login */
     if (usersession == false) {
-     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-          User.count().then(count => {
-            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
-          })
+      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+      User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+        User.count().then(count => {
+          res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
         })
+      })
       //})
       usersession = true
     } else {
-     // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-          User.count().then(count => {
+      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+      User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+        User.count().then(count => {
           res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
-          })
         })
-     // })
+      })
+      // })
     }
   }
 }
@@ -198,6 +203,74 @@ exports.deleteUser = (req, res) => {
 exports.logoutuser = (req, res) => {
   usersession = false
   res.redirect('/login')
+}
+
+exports.generatepdf = (req, res) => {
+
+  console.log(">>method called")
+
+  /* html-pdf not working as it display just html tags n full code */
+  // pdf.create(html, options).toFile('./businesscard.pdf', function(err, res) {
+  //   if (err) return console.log(err);
+  //   console.log(res); // { filename: '/app/businesscard.pdf' }
+  // });
+
+
+  /* this is working but shows <a> tag values */
+  phantom.create().then(function (ph) {
+    ph.createPage().then(function (page) {
+      page.open("http://localhost:5525/dashboard/1").then(function (status) {
+
+        // page.property('clipRect', { top: 50,  left: 10, width: 800, height: 600}).then(function() {
+        // });
+        page.property('viewportSize', {width: 800, height: 600}).then(function() {
+        });
+
+        page.property('plainText').then(function(content) {
+         // console.log(content);
+          page.render('dashboardpage.pdf').then(function () {
+            console.log('Page Rendered');
+            ph.exit();
+          });
+          });
+
+      });
+    });
+  });
+
+
+  // page.paperSize = {
+  //   format: 'A4',
+  //   orientation: 'portrait',
+  //   margin: {
+  //     top: "1.5cm",
+  //     bottom: "1cm"
+  //   },
+  //   footer: {
+  //     height: "1cm",
+  //     contents: phantom.callback(function (pageNum, numPages) {
+  //       return '' +
+  //         '<div style="margin: 0 1cm 0 1cm; font-size: 0.65em">' +
+  //         '   <div style="color: #888; padding:20px 20px 0 10px; border-top: 1px solid #ccc;">' +
+  //         '       <span>REPORT FOOTER</span> ' +
+  //         '       <span style="float:right">' + pageNum + ' / ' + numPages + '</span>' +
+  //         '   </div>' +
+  //         '</div>';
+  //     })
+  //   }
+  // };
+
+  // // This will fix some things that I'll talk about in a second
+  // page.settings.dpi = "96";
+
+  // page.content = fs.read(system.args[1]);
+
+  // var output = system.args[2];
+
+  // window.setTimeout(function () {
+  //   page.render(output, { format: 'pdf' });
+  //   phantom.exit(0);
+  // }, 2000);
 }
 
 /* remove image from database and also from server when click on remove image button in upload profile */

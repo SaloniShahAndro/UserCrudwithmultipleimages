@@ -15,6 +15,7 @@ var Routes = [
     router.post('/temp/:id', controllers.postedituser),
     router.get('/logout', controllers.logoutuser),
     router.get('/removeimage/:id', controllers.removeimage),
+    router.get('/generatepdf',controllers.generatepdf),
     /* redirecting user after facebook login */
     router.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' })),
     /* redirecting callback user after facebook login */
