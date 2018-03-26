@@ -7,6 +7,8 @@ const UserProfilepic = require('../models/profilepic.model')/* model class for p
 const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
 var phantom = require('phantom');
 const path = require('path');
+const nodemailer = require('nodemailer');
+
 // var pdf = require('html-pdf');
 // var html = fs.readFileSync(path.resolve(__dirname, '../templates/dashboard.ejs'), 'utf8');
 // var options = { format: 'Letter' };
@@ -206,8 +208,65 @@ exports.logoutuser = (req, res) => {
 }
 
 exports.generatepdf = (req, res) => {
+  phantom.create().then(function (ph) {
+    ph.createPage().then(function (page) {
+      page.open("http://localhost:5525/dashboard/1").then(function (status) {
 
-  console.log(">>method called")
+        // page.property('clipRect', { top: 50,  left: 10, width: 800, height: 600}).then(function() {
+        // });
+        page.property('viewportSize', { width: 800, height: 600 }).then(function () {
+        });
+
+        page.property('plainText').then(function (content) {
+          // console.log(content);
+          page.render('dashboardpage.pdf').then(function () {
+            console.log('Page Rendered');
+            let transporter=nodemailer.createTransport({
+              service: 'Gmail',
+              auth: {
+                user: 'zaptechzapian@gmail.com', // Your email id
+                pass: 'zaptech123#' // Your password
+              }
+            });
+          
+            // setup email data with unicode symbols
+            let mailOptions = {
+              from: '"Saloni Shah" <admin@admin.com>', // sender address
+              to: 'saloni@zaptechsolutions.com', // list of receivers
+              subject: 'Pdf demo', // Subject line
+              text: 'Find this attached pdf', // plain text body
+              attachments:[{
+               // path:'/home/saloni/Downloads/test.pdf',
+               path:'/var/www/html/UserCrud/dashboardpage.pdf',
+               // filename:'test.pdf',
+               filename:'dashboardpage.pdf',
+                contentType:'application/pdf'
+              }],function(err,info){
+                if(err){
+                  console.log("err",err)
+                }else{
+                  console.log("info",info)
+                }
+              }
+            };
+          
+            // send mail with defined transport object
+            transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                return console.log(error);
+              }
+              /* this is working but shows <a> tag values */
+             
+              console.log('Message sent: %s', info.messageId);
+            });
+            ph.exit();
+          });
+        });
+
+      });
+    });
+  });
+  
 
   /* html-pdf not working as it display just html tags n full code */
   // pdf.create(html, options).toFile('./businesscard.pdf', function(err, res) {
@@ -216,27 +275,6 @@ exports.generatepdf = (req, res) => {
   // });
 
 
-  /* this is working but shows <a> tag values */
-  phantom.create().then(function (ph) {
-    ph.createPage().then(function (page) {
-      page.open("http://localhost:5525/dashboard/1").then(function (status) {
-
-        // page.property('clipRect', { top: 50,  left: 10, width: 800, height: 600}).then(function() {
-        // });
-        page.property('viewportSize', {width: 800, height: 600}).then(function() {
-        });
-
-        page.property('plainText').then(function(content) {
-         // console.log(content);
-          page.render('dashboardpage.pdf').then(function () {
-            console.log('Page Rendered');
-            ph.exit();
-          });
-          });
-
-      });
-    });
-  });
 
 
   // page.paperSize = {
