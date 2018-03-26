@@ -60,6 +60,7 @@ exports.userdashboard = (req, res) => {
 exports.userdashboardPage = (req, res) => {
   var perPage = 5
   var page = req.params.page
+  console.log(">>reqbody", req.body)
 
   /* social login */
   if (req.user) {
@@ -71,24 +72,37 @@ exports.userdashboardPage = (req, res) => {
       //})
     })
   } else {
+    console.log(">>>>usersession", usersession)
     /* general user login */
     if (usersession == false) {
-      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-      User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-        User.count().then(count => {
-          res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+      if (req.body.email == 'admin@gmail.com') {
+        // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+          User.count().then(count => {
+            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+            usersession = true
+          })
         })
-      })
-      //})
-      usersession = true
+        //})
+       
+      }else{
+        res.redirect('/login') 
+      }
+
     } else {
-      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-      User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-        User.count().then(count => {
-          res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+     
+        // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+          User.count().then(count => {
+            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
+          })
         })
-      })
-      // })
+        //})
+     
+      if(!req.body){
+        res.redirect('/login')
+      }
+
     }
   }
 }
@@ -221,42 +235,42 @@ exports.generatepdf = (req, res) => {
           // console.log(content);
           page.render('dashboardpage.pdf').then(function () {
             console.log('Page Rendered');
-            let transporter=nodemailer.createTransport({
+            let transporter = nodemailer.createTransport({
               service: 'Gmail',
               auth: {
                 user: 'zaptechzapian@gmail.com', // Your email id
                 pass: 'zaptech123#' // Your password
               }
             });
-          
+
             // setup email data with unicode symbols
             let mailOptions = {
               from: '"Saloni Shah" <admin@admin.com>', // sender address
               to: 'saloni@zaptechsolutions.com', // list of receivers
               subject: 'Pdf demo', // Subject line
               text: 'Find this attached pdf', // plain text body
-              attachments:[{
-               // path:'/home/saloni/Downloads/test.pdf',
-               path:'/var/www/html/UserCrud/dashboardpage.pdf',
-               // filename:'test.pdf',
-               filename:'dashboardpage.pdf',
-                contentType:'application/pdf'
-              }],function(err,info){
-                if(err){
-                  console.log("err",err)
-                }else{
-                  console.log("info",info)
+              attachments: [{
+                // path:'/home/saloni/Downloads/test.pdf',
+                path: '/var/www/html/UserCrud/dashboardpage.pdf',
+                // filename:'test.pdf',
+                filename: 'dashboardpage.pdf',
+                contentType: 'application/pdf'
+              }], function(err, info) {
+                if (err) {
+                  console.log("err", err)
+                } else {
+                  console.log("info", info)
                 }
               }
             };
-          
+
             // send mail with defined transport object
             transporter.sendMail(mailOptions, (error, info) => {
               if (error) {
                 return console.log(error);
               }
               /* this is working but shows <a> tag values */
-             
+
               console.log('Message sent: %s', info.messageId);
             });
             ph.exit();
@@ -266,7 +280,7 @@ exports.generatepdf = (req, res) => {
       });
     });
   });
-  
+
 
   /* html-pdf not working as it display just html tags n full code */
   // pdf.create(html, options).toFile('./businesscard.pdf', function(err, res) {

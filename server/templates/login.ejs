@@ -63,29 +63,34 @@
             }
         });
 
-        $("#submit").on("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $.ajax({
-                method: 'GET',
-                url: '/dashboard/1',
-                success: function (result) {
-                    if ($("#email").val() == 'admin@gmail.com' && $("#password").val() == '123456') {
-                        $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                        $("#signupalert span").text("Login Successfully")
-                        setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
-                    } else {
-                        $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                        $("#signupalert span").text("Please try again")
-                        setTimeout(function () { window.location.reload() }, 500);
+        // $("#submit").on("click", function (e) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var email=$("#email").val();
+        //     var password = $("#password").val();
+        //     alert($("#loginform").serialize())
+
+        //     $.ajax({
+        //         method: 'POST',
+        //         url: '/dashboard/1',
+        //         data:$("#loginform").serialize(),
+        //         success: function (result) {
+        //             if ($("#email").val() == 'admin@gmail.com' && $("#password").val() == '123456') {
+        //                 $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+        //                 $("#signupalert span").text("Login Successfully")
+        //                 setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
+        //             } else {
+        //                 $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+        //                 $("#signupalert span").text("Please try again")
+        //                 setTimeout(function () { window.location.reload() }, 500);
                         
-                    }
-                }
-            })
+        //             }
+        //         }
+        //     })
 
 
 
-        })
+        // })
     })
 
 </script>
