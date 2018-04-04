@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="../assets/js/fancybox/jquery.fancybox-1.3.4.css" />
 
 
-
+<!-- for pdf jspdf -->
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
 
 <div id="ignorePDF">
@@ -30,9 +30,12 @@
                         <% } %>
 
 </div>
-<button type="button" id="generatepdf">Create PDF</button>
+
 
 <body>
+    <div id="delete" style="display:none" class="alert" tabindex="1">
+        <span> </span>
+    </div>
     <h1>User List</h1>
 
     <div class="userlist">
@@ -180,8 +183,14 @@
                     method: 'GET',
                     url: '/user/delete/' + id,
                     success: function (result) {
-                        console.log("delted", id)
-                        location.reload();
+
+                        $("#delete").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                        $("#delete span").text("User Deleted Successfully")
+                        $("#delete").focus();/* for showing alert...for focusing */
+                       // window.location.hash = '#delete';
+                        
+                        window.location.reload();
+                        
                     }
                 })
             }
@@ -189,6 +198,7 @@
 
         $("#adduser").click(function () {
             location.href = "/register"
+
         })
 
         $("#logout").click(function () {
@@ -204,7 +214,7 @@
             }
         };
         $("#generatepdf").click(function () {
-             location.href = "/generatepdf"
+            location.href = "/generatepdf"
             var doc = new jsPDF('p', 'pt', 'a4', true);
 
 

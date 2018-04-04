@@ -19,6 +19,9 @@
     <h2>Update</h2>
 
     <form method="post" action="/temp/<%= userdata.id%>" id="updateform" enctype="multipart/form-data">
+        <div id="signupalert" style="display:none" class="alert" tabindex='1'>
+            <span> </span>
+        </div>
         <div class="form-group">
             <label for="firstname">First name</label>
             <input type="text" name="firstname" id="firstname" class="form-control" value="<%= userdata.firstname%>" />
@@ -52,10 +55,13 @@
         </div>
 
         <label>Profile Picture</label>
-        <div>
+        <div class="removediv">
             <% for(var k=0; k<(userdata.profilepics).length; k++) {%>
-                <img src="/assets/tmp/<%= userdata.profilepics[k].profilepicture %>" />
-                <button class="removeimage" id="<%= userdata.profilepics[k].id %>">Remove Image</button>
+                <div id="<%= userdata.profilepics[k].id %>">
+                    <img src="/assets/tmp/<%= userdata.profilepics[k].profilepicture %>" class="removeimage" value="<%= userdata.profilepics[k].id %>"
+                    />
+                    <button type="button" class="removeimage" value="<%= userdata.profilepics[k].id %>" id="btndel">Remove Image</button>
+                </div>
 
                 <% } %>
 
@@ -103,9 +109,7 @@
     <input type="text" id="us2-lat" value="<%= userdata.latitude%>" name="latitude" /> Long.:
     <input type="text" id="us2-lon" value="<%= userdata.longitude%>" name="longitude" />
 </div>
-<div id="signupalert" style="display:none" class="alert">
-    <span> </span>
-</div>
+
 
 <div class="form-group">
     <button type="submit" class="btn btn-primary" id="submit-all">Update</button>
@@ -119,12 +123,13 @@
 <script type="text/javascript">
     /* dropzone parameters */
     Dropzone.autoDiscover = false;
-    var somethingChanged = false;
+
     function paramNameForSend() {
         return "profilepicture";
     }
     $(document).ready(function () {
         /* getting and converting date */
+        var somethingChanged = false;
         var elem = document.getElementById("date");
         var databasedate = "<%= userdata.date%>";
         databasedate = databasedate.split("-")
@@ -200,6 +205,28 @@
             // $(this).closest('form').data('changed', true);
             somethingChanged = true;
         });
+
+        /* remove already added images */
+        $(".removeimage").click(function () {
+            y = confirm('Do you want to delete?');
+            var id = $(this).attr('value')
+            if (!y) {
+                return false;
+            } else {
+                somethingChanged = true;
+                $.ajax({
+                    method: 'GET',
+                    url: '/removeimage/' + id,
+                    success: function (result) {
+                        $("#" + id).remove()
+
+                    },
+                    error: function () {
+
+                    }
+                })
+            }
+        });
         /* Drop zone image upload and form submit */
         var myDropzone = new Dropzone("#profilepicture", {
             url: '/temp/<%= userdata.id%>',
@@ -224,16 +251,29 @@
                         /* for checking if files are added or not in dropzone */
                         if (myDropzone.getQueuedFiles().length > 0) {
                             myDropzone.processQueue();
+                            somethingChanged = true
                             $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
                             $("#signupalert span").text("Updated Successfully")
+                            $("#signupalert").focus();/* for showing alert...for focusing */
+                           // window.location.hash = '#signupalert';
                         } else {
                             myDropzone.uploadFiles([]);
                             $("#updateform").submit()//for submitting files even if image is not added in dropzone
                         }
+
+                        /* for showing alerts whether user updated anything or not */
                         if (somethingChanged) {
                             $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
                             $("#signupalert span").text("Updated Successfully")
-                        } 
+                            $("#signupalert").focus();/* for showing alert...for focusing */
+                           // window.location.hash = '#signupalert'; /* for showing alert...for focusing */
+
+                        } else {
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                            $("#signupalert span").text("You didn't update anything")
+                            $("#signupalert").focus();
+                           // window.location.hash = '#signupalert';
+                        }
                         setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
                     }
                 });
@@ -270,27 +310,6 @@
                 alert("this is wrong file type")
             }
         });
-
-        /* remove already added images */
-        $(".removeimage").click(function () {
-            y = confirm('Do you want to delete?'); 
-            var id = $(this).attr('id')
-            if (!y) {
-                return false;
-            } else {
-                somethingChanged = true;
-                $.ajax({
-                    method: 'GET',
-                    url: '/removeimage/' + id,
-                    success: function (result) {
-                        console.log("delted", id)  
-                        window.location.reload();
-                       
-                    }
-                })
-            }
-        });
-
     })
 
 </script>

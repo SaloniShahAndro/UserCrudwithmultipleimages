@@ -12,6 +12,8 @@ var SUsermodel = require('./server/models/social.user.model')/*Social user model
 const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
 const csv = require('csv')
 var stream = fs.createReadStream("./server/csv.csv");
+var cookieParser = require('cookie-parser')
+
 
 // Passport session setup.
 passport.serializeUser(function (user, done) {
@@ -38,7 +40,8 @@ passport.use(new FacebookStrategy({
             console.log(">>profile", profile)
             return done(null, users);
             console.log("User already exists in database");
-          } else {
+          }
+           else {
 
             console.log(">>accessToken", profile.name.givenName + " " + profile.name.familyName)
             console.log("There is no such user, adding now");
@@ -60,6 +63,7 @@ passport.use(new TwitterStrategy({
   consumerKey: "0k7WVzfzDEqRv1dizG0rBN2Tk",
   consumerSecret: "iCE2zJLVqFUUrWUvgQ5YaHEGLEkvNUY5lb4jw9LtF6IgYAT98y",
   callbackURL: "http://localhost:5525/auth/twitter/callback",
+  includeEmail:true //for getiing email
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -73,7 +77,14 @@ passport.use(new TwitterStrategy({
             console.log(">>accessToken", profile)
             console.log("There is no such user, adding now");
             // var names =  profile.name.givenName+" "+ profile.name.familyName 
-            SUsermodel.create({ name: profile.displayName, userid: profile.id, accesstoken: accessToken }, function (err, user) {
+            /* for entering email in database */
+            var emaill = null
+            if(profile.emails){
+               emaill = profile.emails[0].value 
+            }else{
+              emaill = null
+            }
+            SUsermodel.create({ name: profile.displayName, userid: profile.id, accesstoken: accessToken ,email:emaill }, function (err, user) {
               if (err) { return done(err); }
               return done(null, user);
             });
@@ -122,6 +133,7 @@ passport.use(new GoogleStrategy({
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cookieParser())
 /* body parsing middleware end */
 
 /* session */
@@ -139,6 +151,7 @@ app.set('views', './server/templates/')
 app.set('view engine', 'ejs')
 app.use(passport.initialize());
 app.use(passport.session());
+
 /* For setting views end */
 
 /* For routing */
@@ -151,7 +164,8 @@ app.use('/assets', express.static('server/assets/'));
 
 
 app.get('/', (req, res) =>
-  res.send('Please login first')
+  //res.send('Please login first'),
+  console.log('Cookies: ', req.cookies)
 )
 
 /* For adding data in database for the 1st time */

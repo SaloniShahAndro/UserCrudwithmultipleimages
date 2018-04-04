@@ -9,6 +9,9 @@ var phantom = require('phantom');
 const path = require('path');
 const nodemailer = require('nodemailer');
 
+
+const mailer = require('../helpers/mail.helper');
+
 // var pdf = require('html-pdf');
 // var html = fs.readFileSync(path.resolve(__dirname, '../templates/dashboard.ejs'), 'utf8');
 // var options = { format: 'Letter' };
@@ -81,25 +84,27 @@ exports.userdashboardPage = (req, res) => {
           User.count().then(count => {
             res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
             usersession = true
+
+
           })
         })
         //})
-       
-      }else{
-        res.redirect('/login') 
+
+      } else {
+        res.redirect('/login')
       }
 
     } else {
-     
-        // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-          User.count().then(count => {
-            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
-          })
+
+      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
+      User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
+        User.count().then(count => {
+          res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
         })
-        //})
-     
-      if(!req.body){
+      })
+      //})
+
+      if (!req.body) {
         res.redirect('/login')
       }
 
@@ -110,7 +115,7 @@ exports.userdashboardPage = (req, res) => {
 /* displaying screen for add user */
 exports.registeruser = (req, res) => {
   if (usersession) {
-    res.render('register')
+    res.render('register', { someVal: '' })
   } else {
     res.redirect('/login')
   }
@@ -124,12 +129,14 @@ exports.postregisteruser = (req, res) => {
     User.sync({ force: false }).then(() => {
       User.find({ where: { email: req.body.email } }).then(userdata => {
         if (userdata) {
-          // res.send('user already exists')
-          res.redirect('back')
 
         } else {
-
           User.create(params).then(registerdata => {
+
+            sendRegesterMail(registerdata)//for sending mail
+
+
+            //for handling profile pics in db
             req.files.forEach(element => {
               //params['profilepicture'] = element.filename;
               // resize_image(element.filename)
@@ -142,7 +149,7 @@ exports.postregisteruser = (req, res) => {
                 })
               });
             })
-            //res.redirect('/dashboard/1')
+            //  res.redirect('/dashboard/1')
           });
         }
       })
@@ -150,12 +157,32 @@ exports.postregisteruser = (req, res) => {
   })
 }
 
-
+exports.checkemailexist = (req, res) => {
+  upload(req, res).then(() => {
+    User.sync({ force: false }).then(() => {
+      console.log(">>checkemail", req.body.email)
+      User.find({ where: { email: req.body.email } }).then(userdata => {
+        if (userdata) {
+          console.log(">>>userdata",userdata)
+          res.send(false)
+        
+        } else {
+          res.send(true)
+        
+        }
+      })
+    })
+  })
+}
 /* display user edit data */
 exports.edituser = (req, res) => {
+
   if (usersession) {
     User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(edituserdata => {
+
+
       res.render('useredit', { userdata: edituserdata })
+
     })
   } else {
     res.redirect('/login')
@@ -191,6 +218,7 @@ exports.postedituser = (req, res) => {
               user_id: req.params.id
             }).then((userprofilepicdata) => {
               resize_image(element.filename)
+
               // res.redirect('/dashboard')
             })
           });
@@ -209,8 +237,9 @@ exports.deleteUser = (req, res) => {
       userdata.profilepics.forEach(element => {
         fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
         fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
+        res.send()
       })
-      res.redirect('/dashboard/1')
+      
     })
   })
 }
@@ -331,7 +360,9 @@ exports.removeimage = (req, res) => {
     UserProfilepic.destroy({ where: { id: req.params.id } }).then(userdata => {
       fs.unlink(`server/assets/tmp/${userdeleteddata.profilepicture}`)//for unlinking image from server
       fs.unlink(`server/assets/multiimage/${userdeleteddata.profilepicture}`)//for unlinking image from server
-      res.redirect('back')
+      res.send(true);
+    }).catch(err => {
+      res.error();
     })
   })
 }
@@ -341,5 +372,22 @@ function resize_image(filename) {
   Jimp.read(`server/assets/multiimage/${filename}`, function (err, img) {
     if (err) console.log('ERROR==========>', err);
     img.resize(Jimp.AUTO, 100).quality(100).write(`server/assets/tmp/${filename}`); // save ;
+  });
+}
+
+function sendRegesterMail(data) {
+  console.log(">>regestermail", data)
+  var mail_data = {
+    'template': 'register',
+    'to': data.email,
+    'subject': data.subject,
+    'temp_data': data
+  };
+  mailer.sendMail(mail_data).then(rdata => {
+    console.log("Mail Send==>", rdata)
+    //cres.send(res , data , "Please check your mail");
+  }).catch(err => {
+    console.log('Mail Failed : ', err);
+    //cres.error(res);
   });
 }

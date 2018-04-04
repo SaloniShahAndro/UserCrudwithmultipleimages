@@ -8,6 +8,7 @@ var Routes = [
     router.get('/login', controllers.getloginuser),//1
     router.post('/dashbord', controllers.postregisteruser),//4
     router.get('/dashboard', controllers.userdashboard),//2
+    router.post('/checkemailexist',controllers.checkemailexist),//for checking if email is already exist or not in add user.
     router.get('/dashboard/:page', controllers.userdashboardPage),//2
     router.post('/dashboard/:page', controllers.userdashboardPage),
     router.get('/user/delete/:id', controllers.deleteUser),
@@ -24,7 +25,7 @@ var Routes = [
             res.redirect('/register');
         }),
     /* redirecting user after twitter login */
-    router.get('/auth/twitter', passport.authenticate('twitter')),
+    router.get('/auth/twitter', passport.authenticate('twitter',{scope:['include_email=true']})),
     /* redirecting callback user after twitter login */
     router.get('/auth/twitter/callback',
         passport.authenticate('twitter', { successRedirect: '/dashboard/1', failureRedirect: '/login' }),
@@ -45,10 +46,5 @@ var Routes = [
     }),
 
 ]
-function ensureAuthenticated(req, res, next) {
 
-    if (req.isAuthenticated()) { return next(); }
-    res.redirect('/dashboard')
-
-}
 module.exports = Routes;
