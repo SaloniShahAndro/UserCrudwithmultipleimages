@@ -129,7 +129,8 @@
     }
     $(document).ready(function () {
         /* getting and converting date */
-        var somethingChanged = false;
+        var somethingChanged = false; //for checking is anything changed or not
+        var remimage = false; // for checking any image is available or not
         var elem = document.getElementById("date");
         var databasedate = "<%= userdata.date%>";
         databasedate = databasedate.split("-")
@@ -219,7 +220,6 @@
                     url: '/removeimage/' + id,
                     success: function (result) {
                         $("#" + id).remove()
-
                     },
                     error: function () {
 
@@ -248,33 +248,26 @@
                     e.stopPropagation();
                     if ($("#updateform").valid()) {
 
+
                         /* for checking if files are added or not in dropzone */
                         if (myDropzone.getQueuedFiles().length > 0) {
                             myDropzone.processQueue();
                             somethingChanged = true
-                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                            $("#signupalert span").text("Updated Successfully")
-                            $("#signupalert").focus();/* for showing alert...for focusing */
-                           // window.location.hash = '#signupalert';
+                            showalerts(somethingChanged);
                         } else {
                             myDropzone.uploadFiles([]);
-                            $("#updateform").submit()//for submitting files even if image is not added in dropzone
+                            if ($('.removediv').children().length == 0) {
+                                $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                                $("#signupalert span").text("Please Update Profile Picture")
+                                $("#signupalert").focus();
+                            }
+                            else {
+                                $("#updateform").submit()//for submitting files even if image is not added in dropzone
+                                showalerts(somethingChanged);
+                            }
                         }
 
-                        /* for showing alerts whether user updated anything or not */
-                        if (somethingChanged) {
-                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                            $("#signupalert span").text("Updated Successfully")
-                            $("#signupalert").focus();/* for showing alert...for focusing */
-                           // window.location.hash = '#signupalert'; /* for showing alert...for focusing */
 
-                        } else {
-                            $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                            $("#signupalert span").text("You didn't update anything")
-                            $("#signupalert").focus();
-                           // window.location.hash = '#signupalert';
-                        }
-                        setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
                     }
                 });
 
@@ -311,5 +304,22 @@
             }
         });
     })
+
+    function showalerts(somethingChanged) {
+        /* for showing alerts whether user updated anything or not */
+        if (somethingChanged) {
+            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+            $("#signupalert span").text("Updated Successfully")
+            $("#signupalert").focus();/* for showing alert...for focusing */
+            // window.location.hash = '#signupalert'; /* for showing alert...for focusing */
+
+        } else {
+            $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+            $("#signupalert span").text("You didn't update anything")
+            $("#signupalert").focus();
+            // window.location.hash = '#signupalert';
+        }
+        setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
+    }
 
 </script>
