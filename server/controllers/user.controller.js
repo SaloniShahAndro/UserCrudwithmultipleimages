@@ -1,23 +1,20 @@
-
 const User = require('../models/user.model')/* model class */
 const bcrypt = require('bcrypt')/* for encrypting password */
 const upload = require('../helpers/image-upload.helper').userMultiImageUpload;/* for using multer for uploading profilepic */
 const Jimp = require("jimp");/* for resizing image */
 const UserProfilepic = require('../models/profilepic.model')/* model class for pictures */
 const fs = require('fs')/* fs for reading and writing file, here for unlinking profilepic from server */
-var phantom = require('phantom');
 const path = require('path');
 const nodemailer = require('nodemailer');
-
-
 const mailer = require('../helpers/mail.helper');
 
-// var pdf = require('html-pdf');
-// var html = fs.readFileSync(path.resolve(__dirname, '../templates/dashboard.ejs'), 'utf8');
-// var options = { format: 'Letter' };
 
-
-/* First screen for login user */
+/**
+ * First screen for login user
+ * @api {get} /login Login
+ * @apiName Login
+ * @apiGroup User
+ */
 exports.getloginuser = (req, res) => {
   /* here req.user is for checking social login or not, if its is social login then it has value of req.user */
   if (req.user) {
@@ -59,138 +56,164 @@ exports.userdashboard = (req, res) => {
   }
 }
 
-/* pagination on dashboard */
+/**
+ *  This is post login function.In this function both social and general login is done
+ * @api {Post} /dashboard/:page ApiLogin
+ * @apiName ApiLogin
+ * @apiGroup User
+ * @apiparam {string} email      User's Email Id
+ * @apiparam {string} password   User's Password(min 5 digit)
+ */
 exports.userdashboardPage = (req, res) => {
   var perPage = 5
   var page = req.params.page
-  console.log(">>reqbody", req.body)
-
   /* social login */
   if (req.user) {
     User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
       User.count().then(count => {
         res.render('dashboard', { alluserdataslider: alluserdataslider, user: req.user, current: page, pages: Math.ceil(count / perPage) })
       })
-      //})
     })
   } else {
-    console.log(">>>>usersession", usersession)
     /* general user login */
     if (usersession == false) {
-      if (req.body.email == 'admin@gmail.com') {
-        // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
-        User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
-          User.count().then(count => {
-            res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
-            usersession = true
+      User.find({ where: { email: req.body.email, usertype: 'admin' } }).then(userlogin => {
+        if (userlogin) {
+          bcrypt.compare(req.body.password, userlogin.password).then(function (loginwithpwd) {
+            if (loginwithpwd == true) {
+              usersession = true
+              res.send({ response: true, message: 'User Login Successfully' })
 
-
+            } else {
+              res.send({ response: false, message: 'Please Enter Correct Password' })
+            }
           })
-        })
-        //})
-
-      } else {
-        res.redirect('/login')
-      }
-
+        } else {
+          res.send({ response: false, message: 'Please Enter Correct Email and Password' })
+        }
+      })
     } else {
-
-      // User.findAll({ group: ['user_id'], include: [{ model: UserProfilepic }] }).then(alluserdata => {
       User.findAll({ include: [{ model: UserProfilepic }], offset: (perPage * page) - perPage, limit: perPage }).then(alluserdataslider => {
         User.count().then(count => {
           res.render('dashboard', { alluserdataslider: alluserdataslider, user: null, current: page, pages: Math.ceil(count / perPage) })
         })
       })
-      //})
-
-      if (!req.body) {
-        res.redirect('/login')
-      }
-
     }
   }
 }
 
-/* displaying screen for add user */
+/**
+ * displaying screen for add user
+ * @api {get} /register Register
+ * @apiName Register
+ * @apiGroup User
+ */
 exports.registeruser = (req, res) => {
   if (usersession) {
-    res.render('register', { someVal: '' })
+    res.render('register')
   } else {
     res.redirect('/login')
   }
 }
 
-/* for submitting add user data  */
+
+/**
+ *  This is post Register function.For submitting user data
+ * @api {Post} /api/register ApiRegister
+ * @apiName ApiRegister
+ * @apiGroup User
+ * @apiparam {string} firstname           User's First name
+ * @apiparam {string} lastname            User's Last name
+ * @apiparam {string} email               User's Email Id
+ * @apiparam {string} password            User's Password(min 5 digit)
+ * @apiparam {string} description         User's Description
+ * @apiparam {string} gender              User's gender (male or female)
+ * @apiparam {string} status              User's status either active or inactive
+ * @apiparam {string} profilepicture      User's profile picture(this can be multiple)
+ * @apiparam {date}[date]                 User's date of birth
+ * @apiparam {decimal}[latitude]          User's Location latitude
+ * @apiparam {decimal}[longitude]         User's Location Longitude
+ * @apiparam {string}[address]            User's address
+ */
 exports.postregisteruser = (req, res) => {
   upload(req, res).then(() => {
     var params = {}
     params = req.body
-    User.sync({ force: false }).then(() => {
-      User.find({ where: { email: req.body.email } }).then(userdata => {
-        if (userdata) {
+    User.find({ where: { email: req.body.email } }).then(userdata => {
+      if (userdata) {
 
-        } else {
-          User.create(params).then(registerdata => {
-
-            sendRegesterMail(registerdata)//for sending mail
-
-
-            //for handling profile pics in db
-            req.files.forEach(element => {
-              //params['profilepicture'] = element.filename;
-              // resize_image(element.filename)
-              UserProfilepic.sync({ force: false }).then(() => {
-                UserProfilepic.create({
-                  profilepicture: element.filename,
-                  user_id: registerdata.id
-                }).then((userprofilepicdata) => {
-                  resize_image(userprofilepicdata.profilepicture)/* for resizing image to display in dashboard */
-                })
-              });
+      } else {
+        User.create(params).then(registerdata => {
+          sendRegesterMail(registerdata)//for sending mail
+          //for handling profile pics in db
+          req.files.forEach(element => {
+            UserProfilepic.create({
+              profilepicture: element.filename,
+              user_id: registerdata.id
+            }).then((userprofilepicdata) => {
+              resize_image(userprofilepicdata.profilepicture)/* for resizing image to display in dashboard */
             })
-            //  res.redirect('/dashboard/1')
-          });
-        }
-      })
+          })
+        });
+      }
     });
   })
 }
-
+/**
+ * To check if the email id is already registered or not
+ * @api {Post} /checkemailexist Check Email Exist
+ * @apiName Check Email Exist
+ * @apiGroup User
+ * @apiparam {string} email      User's Email Id
+ */
 exports.checkemailexist = (req, res) => {
   upload(req, res).then(() => {
-    User.sync({ force: false }).then(() => {
-      console.log(">>checkemail", req.body.email)
-      User.find({ where: { email: req.body.email } }).then(userdata => {
-        if (userdata) {
-          console.log(">>>userdata",userdata)
-          res.send(false)
-        
-        } else {
-          res.send(true)
-        
-        }
-      })
+    User.find({ where: { email: req.body.email } }).then(userdata => {
+      if (userdata) {
+        console.log(">>>if checkemail")
+        res.send(false)
+       // res.send({status:req.body.email,message:'Email is already used',status:false})
+      } else {
+        console.log(">>>else checkemail")
+        res.send(true)
+       // res.send({status:null,message:'Email is new',status:true})
+      }
     })
   })
 }
-/* display user edit data */
-exports.edituser = (req, res) => {
 
+/**
+ * display user edit page of particular user
+ * @api {get} /useredit/:id Edit User
+ * @apiName Edit User
+ * @apiGroup User
+ */
+exports.edituser = (req, res) => {
   if (usersession) {
     User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(edituserdata => {
-
-
       res.render('useredit', { userdata: edituserdata })
-
     })
   } else {
     res.redirect('/login')
   }
-
 }
 
-/* post user edit data */
+/**
+ *  This is Edit User function.For submitting user's edited data
+ * @api {Post} /api/useredit/:id ApiUserEdit
+ * @apiName ApiUserEdit
+ * @apiGroup User
+ * @apiparam {string} firstname           User's First name
+ * @apiparam {string} lastname            User's Last name
+ * @apiparam {string} description         User's Description
+ * @apiparam {string} gender              User's gender (male or female)
+ * @apiparam {string} status              User's status either active or inactive
+ * @apiparam {string} profilepicture      User's profile picture(this can be multiple)
+ * @apiparam {date}[date]                 User's date of birth
+ * @apiparam {decimal}[latitude]          User's Location latitude
+ * @apiparam {decimal}[longitude]         User's Location Longitude
+ * @apiparam {string}[address]            User's address
+ */
 exports.postedituser = (req, res) => {
   if (usersession) {
     upload(req, res).then(() => {
@@ -205,23 +228,18 @@ exports.postedituser = (req, res) => {
       params['longitude'] = req.body.longitude;
       params['address'] = req.body.address;
       console.log(">>params", params)
-
       User.update(params, {
         where: {
           id: req.params.id
         }
       }).then(updatedata => {
         req.files.forEach(element => {
-          UserProfilepic.sync({ force: false }).then(() => {
-            UserProfilepic.create({
-              profilepicture: element.filename,
-              user_id: req.params.id
-            }).then((userprofilepicdata) => {
-              resize_image(element.filename)
-
-              // res.redirect('/dashboard')
-            })
-          });
+          UserProfilepic.create({
+            profilepicture: element.filename,
+            user_id: req.params.id
+          }).then((userprofilepicdata) => {
+            resize_image(element.filename)
+          })
         })
       })
     })
@@ -230,137 +248,43 @@ exports.postedituser = (req, res) => {
   }
 }
 
-/* delete user  */
+/**
+ * Delete particular user
+ * @api {get} /user/delete/:id Delete User
+ * @apiName Delete User
+ * @apiGroup User
+ */
 exports.deleteUser = (req, res) => {
   User.find({ where: { id: req.params.id }, include: [{ model: UserProfilepic }] }).then(userdata => {
     User.destroy({ where: { id: req.params.id } }).then(userdeletedata => {
       userdata.profilepics.forEach(element => {
         fs.unlink(`server/assets/tmp/${element.profilepicture}`)//for unlinking image from server
         fs.unlink(`server/assets/multiimage/${element.profilepicture}`)//for unlinking image from server
-        res.send()
+        res.send({data:userdata,message:'User deleted successfully',status:true})
       })
-      
     })
   })
 }
 
-/* logout user */
+/*
+* logout user */
 exports.logoutuser = (req, res) => {
   usersession = false
   res.redirect('/login')
 }
 
-exports.generatepdf = (req, res) => {
-  phantom.create().then(function (ph) {
-    ph.createPage().then(function (page) {
-      page.open("http://localhost:5525/dashboard/1").then(function (status) {
-
-        // page.property('clipRect', { top: 50,  left: 10, width: 800, height: 600}).then(function() {
-        // });
-        page.property('viewportSize', { width: 800, height: 600 }).then(function () {
-        });
-
-        page.property('plainText').then(function (content) {
-          // console.log(content);
-          page.render('dashboardpage.pdf').then(function () {
-            console.log('Page Rendered');
-            let transporter = nodemailer.createTransport({
-              service: 'Gmail',
-              auth: {
-                user: 'zaptechzapian@gmail.com', // Your email id
-                pass: 'zaptech123#' // Your password
-              }
-            });
-
-            // setup email data with unicode symbols
-            let mailOptions = {
-              from: '"Saloni Shah" <admin@admin.com>', // sender address
-              to: 'saloni@zaptechsolutions.com', // list of receivers
-              subject: 'Pdf demo', // Subject line
-              text: 'Find this attached pdf', // plain text body
-              attachments: [{
-                // path:'/home/saloni/Downloads/test.pdf',
-                path: '/var/www/html/UserCrud/dashboardpage.pdf',
-                // filename:'test.pdf',
-                filename: 'dashboardpage.pdf',
-                contentType: 'application/pdf'
-              }], function(err, info) {
-                if (err) {
-                  console.log("err", err)
-                } else {
-                  console.log("info", info)
-                }
-              }
-            };
-
-            // send mail with defined transport object
-            transporter.sendMail(mailOptions, (error, info) => {
-              if (error) {
-                return console.log(error);
-              }
-              /* this is working but shows <a> tag values */
-
-              console.log('Message sent: %s', info.messageId);
-            });
-            ph.exit();
-          });
-        });
-
-      });
-    });
-  });
-
-
-  /* html-pdf not working as it display just html tags n full code */
-  // pdf.create(html, options).toFile('./businesscard.pdf', function(err, res) {
-  //   if (err) return console.log(err);
-  //   console.log(res); // { filename: '/app/businesscard.pdf' }
-  // });
-
-
-
-
-  // page.paperSize = {
-  //   format: 'A4',
-  //   orientation: 'portrait',
-  //   margin: {
-  //     top: "1.5cm",
-  //     bottom: "1cm"
-  //   },
-  //   footer: {
-  //     height: "1cm",
-  //     contents: phantom.callback(function (pageNum, numPages) {
-  //       return '' +
-  //         '<div style="margin: 0 1cm 0 1cm; font-size: 0.65em">' +
-  //         '   <div style="color: #888; padding:20px 20px 0 10px; border-top: 1px solid #ccc;">' +
-  //         '       <span>REPORT FOOTER</span> ' +
-  //         '       <span style="float:right">' + pageNum + ' / ' + numPages + '</span>' +
-  //         '   </div>' +
-  //         '</div>';
-  //     })
-  //   }
-  // };
-
-  // // This will fix some things that I'll talk about in a second
-  // page.settings.dpi = "96";
-
-  // page.content = fs.read(system.args[1]);
-
-  // var output = system.args[2];
-
-  // window.setTimeout(function () {
-  //   page.render(output, { format: 'pdf' });
-  //   phantom.exit(0);
-  // }, 2000);
-}
-
-/* remove image from database and also from server when click on remove image button in upload profile */
+/**
+ * remove image from database and also from server when click on remove image button in upload profile
+ * @api {get} /removeimage/:id Remove Image
+ * @apiName Remove Image
+ * @apiGroup User
+ */
 exports.removeimage = (req, res) => {
   UserProfilepic.find({ where: { id: req.params.id } }).then(userdeleteddata => {
     UserProfilepic.destroy({ where: { id: req.params.id } }).then(userdata => {
       fs.unlink(`server/assets/tmp/${userdeleteddata.profilepicture}`)//for unlinking image from server
       fs.unlink(`server/assets/multiimage/${userdeleteddata.profilepicture}`)//for unlinking image from server
-      res.send(true);
+      res.send({data:userdeleteddata,message:'Image deleted successfully',status:true});
     }).catch(err => {
       res.error();
     })
@@ -375,6 +299,7 @@ function resize_image(filename) {
   });
 }
 
+/* function for sending email when user register. */
 function sendRegesterMail(data) {
   console.log(">>regestermail", data)
   var mail_data = {
@@ -385,9 +310,9 @@ function sendRegesterMail(data) {
   };
   mailer.sendMail(mail_data).then(rdata => {
     console.log("Mail Send==>", rdata)
-    //cres.send(res , data , "Please check your mail");
+    //res.send(res , data , "Please check your mail");
   }).catch(err => {
     console.log('Mail Failed : ', err);
-    //cres.error(res);
+    //res.error(res);
   });
 }

@@ -72,10 +72,8 @@ passport.use(new TwitterStrategy({
         SUsermodel.findOne({ where: { 'userid': profile.id } }).then((users) => {
           if (users) {
             return done(null, users);
-            console.log("User already exists in database");
+           
           } else {
-            console.log(">>accessToken", profile)
-            console.log("There is no such user, adding now");
             // var names =  profile.name.givenName+" "+ profile.name.familyName 
             /* for entering email in database */
             var emaill = null
@@ -147,6 +145,7 @@ app.use(session({
 
 global.usersession = false
 /* For setting views */
+app.use("/apidoc",express.static('apidoc'));
 app.set('views', './server/templates/')
 app.set('view engine', 'ejs')
 app.use(passport.initialize());
@@ -172,17 +171,16 @@ app.get('/', (req, res) =>
 app.get('/add', (req, res) => {
   /* to create user admin */
   Usermodel.sync({ force: false }).then(() => {
-
-    // Usermodel.create({
-    //   firstname: 'admin',
-    //   lastname: 'sadmin',
-    //   email: 'admin@gmail.com',
-    //   password: '123456',
-    //   gender: 'female',
-    //   description: 'dsfsfsdfdsf',
-    //   status: 'active',
-    //   profilepicture: 'abc.jpg'
-    // });
+    Usermodel.create({
+      firstname: 'admin',
+      lastname: 'sadmin',
+      email: 'admin@gmail.com',
+      password: '123456',
+      gender: 'female',
+      description: 'dsfsfsdfdsf',
+      status: 'active',
+      usertype: 'admin'
+    });
   })
 
   UserPicmodel.sync({ force: false }).then(() => {
@@ -197,43 +195,31 @@ app.get('/add', (req, res) => {
     columns: true
   })
 
-  // var csvStream = csv()
-  //   .on("data", function (data) {
-  //     var resultObj = {
-  //       firstname: data['firstname'],
-  //       lastname: data['lastname'],
+  
 
-  //     }
-  //     Usermodel.create(resultObj)
-  //     console.log(data);
-  //   })
-  //   .on("end", function () {
-  //     console.log("done");
-  //   });
-
-    var transform = csv.transform(function(row) {
-      var resultObj = {
-        firstname: row['firstname'],
-        lastname: row['lastname'],
-        email:row['email'],
-        password:row['password'],
-        gender:row['gender'],
-        description:row['description'],
-        status:row['status'],
-        date:row['date'],
-        latitude:row['latitude'],
-        longitude:row['longitude'],
-        address:row['address']
-      }
-      Usermodel.create(resultObj)
-          .then(function() {
-              console.log('>>>>>>>>>>>.Record created')
-          })
-          .catch(function(err) {
-              console.log('Error encountered: ' + err)
-          })
-  })
-  stream.pipe(parser).pipe(transform);
+    // var transform = csv.transform(function(row) {
+    //   var resultObj = {
+    //     firstname: row['firstname'],
+    //     lastname: row['lastname'],
+    //     email:row['email'],
+    //     password:row['password'],
+    //     gender:row['gender'],
+    //     description:row['description'],
+    //     status:row['status'],
+    //     date:row['date'],
+    //     latitude:row['latitude'],
+    //     longitude:row['longitude'],
+    //     address:row['address']
+    //   }
+    //   Usermodel.create(resultObj)
+    //       .then(function() {
+    //           console.log('>>>>>>>>>>>.Record created')
+    //       })
+    //       .catch(function(err) {
+    //           console.log('Error encountered: ' + err)
+    //       })
+  //})
+ // stream.pipe(parser).pipe(transform);
 
 })
 

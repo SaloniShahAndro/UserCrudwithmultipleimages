@@ -32,6 +32,10 @@ const User = seq.sequelize.define('user', {
     },
     address:{
         type:seq.Sequelize.STRING
+    },usertype:{
+        type:seq.Sequelize.ENUM,
+        values:['user','admin'],
+        defaultValue:'user'
     }
   },
   {

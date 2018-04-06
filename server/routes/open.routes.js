@@ -6,17 +6,15 @@ var Routes = [
 
     router.get('/register', controllers.registeruser),//3
     router.get('/login', controllers.getloginuser),//1
-    router.post('/dashbord', controllers.postregisteruser),//4
-    router.get('/dashboard', controllers.userdashboard),//2
+    router.post('/api/register', controllers.postregisteruser),//4
     router.post('/checkemailexist',controllers.checkemailexist),//for checking if email is already exist or not in add user.
     router.get('/dashboard/:page', controllers.userdashboardPage),//2
-    router.post('/dashboard/:page', controllers.userdashboardPage),
+    router.post('/dashboard/:page', controllers.userdashboardPage),//2
     router.get('/user/delete/:id', controllers.deleteUser),
     router.get('/useredit/:id', controllers.edituser),//5
-    router.post('/temp/:id', controllers.postedituser),
+    router.post('/api/useredit/:id', controllers.postedituser),
     router.get('/logout', controllers.logoutuser),
     router.get('/removeimage/:id', controllers.removeimage),
-    router.get('/generatepdf',controllers.generatepdf),
     /* redirecting user after facebook login */
     router.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' })),
     /* redirecting callback user after facebook login */

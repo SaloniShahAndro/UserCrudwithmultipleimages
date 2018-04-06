@@ -73,39 +73,3 @@ exports.userMultiImageUpload = (req, res) => {
         });
     });
 }
-
-/* upload pdf */
-const userpdfOption = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'server/assets/pdf/')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + file.originalname)
-    }
-});
-
-const userPdf = multer({
-    storage: userpdfOption,
-    fileFilter: function (req, file, cb) {
-        var mimetype = 'application/pdf';
-        // if(mimetype !== 'application/pdf') {
-        //     return cb(new Error('Please upload valid documents'))
-        // }
-        cb(null, true)
-    },
-}).single('FormData');
-
-exports.userPdfUpload = (req, res) => {
-    return new Promise((resolve, reject) => {
-        userPdf(req, res, function (err) {
-            if (err) {
-                console.log('err' + err);
-                reject(err);
-            } else {
-                // req.body.profilepicture = req.file ? req.file : "";
-                req.body.FormData = req.file ? req.file['filename'] : "";
-                resolve();
-            }
-        });
-    });
-}

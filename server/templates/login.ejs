@@ -1,94 +1,91 @@
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
-<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
-<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
-<script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
+<% include header %>
 
-<div class="form-container">
-    <h2>Login</h2>
+    <div class="form-container">
+        <h2>Login</h2>
 
-    <form  id="loginform">
+        <form id="loginform">
+            <div class="form-group">
+                <label for="email">Email Id</label>
+                <input type="email" name="email" id="email" class="form-control" required />
+                <span id="span"></span>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" class="form-control" required />
+            </div>
 
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" id="submit">Login</button>
 
-        <div class="form-group">
-            <label for="email">Email Id</label>
-            <input type="email" name="email" id="email" class="form-control" required />
-            <span id="span"></span>
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" class="form-control" required />
-        </div>
+            </div>
+            <div>
+                <% if (!user) { %>
+                    <a href="/auth/facebook">
+                        <button type="button">Facebook</button>
+                    </a>
+                    <a href="/auth/twitter">
+                        <button type="button">Twitter</button>
+                    </a>
+                    <a href="/auth/google">
+                        <button type="button">Google</button>
+                    </a>
+                    <% } else{ %>
 
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary" id="submit">Login</button>
+                        <% } %>
+            </div>
+            <div id="signupalert" style="display:none" class="alert">
+                <span></span>
+            </div>
 
-        </div>
-        <div>
-            <% if (!user) { %>
-                <a href="/auth/facebook">
-                    <button type="button">Facebook</button>
-                </a>
-                <a href="/auth/twitter">
-                    <button type="button">Twitter</button>
-                </a>
-                <a href="/auth/google">
-                    <button type="button">Google</button>
-                </a>
-                <% } else{ %>
+        </form>
+    </div>
 
-                    <% } %>
-        </div>
-        <div id="signupalert" style="display:none" class="alert">
-            <span></span>
-        </div>
+    <script type="text/javascript">
 
-    </form>
-</div>
+        $(document).ready(function () {
+            $("#loginform").validate({
 
-<script type="text/javascript">
-
-    $(document).ready(function () {
-        $("#loginform").validate({
-
-            rules: {
-                email: { required: true, email: true },
-                password: { required: true, minlength: 5 },
-            },
-            errorPlacement: function (error, element) {
-                if (element.prop("type") === "radio") {
-                    error.insertAfter(element.parent().parent(".r-wrap"));
-                } else {
-                    error.insertAfter(element);
-                }
-            }
-        });
-
-        $("#submit").on("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-
-            $.ajax({
-                method: 'POST',
-                url: '/dashboard/1',
-                data:$("#loginform").serialize(),
-                success: function (result) {
-                    if ($("#email").val() == 'admin@gmail.com' && $("#password").val() == '123456') {
-                        $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                        $("#signupalert span").text("Login Successfully")
-                        setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
+                rules: {
+                    email: { required: true, email: true },
+                    password: { required: true, minlength: 5 },
+                },
+                errorPlacement: function (error, element) {
+                    if (element.prop("type") === "radio") {
+                        error.insertAfter(element.parent().parent(".r-wrap"));
                     } else {
-                        $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
-                        $("#signupalert span").text("Please try again")
-                        setTimeout(function () { window.location.reload() }, 500);
-                        
+                        error.insertAfter(element);
                     }
                 }
+            });
+
+            $("#submit").on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $.ajax({
+                    method: 'POST',
+                    url: '/dashboard/1',
+                    data: $("#loginform").serialize(),
+                    success: function (result) {
+                        
+                        if (result.response == true) {
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#008000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                            $("#signupalert span").text(result.message)
+                            setTimeout(function () { window.location.href = "/dashboard/1"; }, 1000);
+                        } else {
+                            $("#signupalert").css({ 'display': 'block', 'background-color': '#FF0000', 'position': 'relative', 'font-color': "#000", "text-align": "center" })
+                            $("#signupalert span").text(result.message)
+                        }
+
+
+                    }, error: function () {
+                        console.log(">>error")
+
+                    }
+                })
+
+
+
             })
-
-
-
         })
-    })
 
-</script>
+    </script>

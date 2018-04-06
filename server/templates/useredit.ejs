@@ -1,12 +1,9 @@
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
-<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
-<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
-<script src="http://ajax.microsoft.com/ajax/jquery.validate/1.11.1/additional-methods.js"></script>
-<script src="../assets/js/dropzone.js"></script>
+<% include header %>
+<script type="text/javascript" src="../assets/js/dropzone.js"></script>
 <link rel="stylesheet" href="../assets/css/dropzone.css" />
 <!-- date picker -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"
+<script type="text/javascript" src="../assets/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="../assets/css/bootstrap-datepicker3.css"
 />
 <!-- google maps place picker -->
 <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBh3L6bSHK9aG4fmX3F2Xd4k-tizhu685Y&sensor=true&libraries=places"></script>
@@ -18,7 +15,7 @@
 <div class="form-container">
     <h2>Update</h2>
 
-    <form method="post" action="/temp/<%= userdata.id%>" id="updateform" enctype="multipart/form-data">
+    <form method="post" action="/api/useredit/<%= userdata.id%>" id="updateform" enctype="multipart/form-data">
         <div id="signupalert" style="display:none" class="alert" tabindex='1'>
             <span> </span>
         </div>
@@ -130,7 +127,6 @@
     $(document).ready(function () {
         /* getting and converting date */
         var somethingChanged = false; //for checking is anything changed or not
-        var remimage = false; // for checking any image is available or not
         var elem = document.getElementById("date");
         var databasedate = "<%= userdata.date%>";
         databasedate = databasedate.split("-")
@@ -229,7 +225,7 @@
         });
         /* Drop zone image upload and form submit */
         var myDropzone = new Dropzone("#profilepicture", {
-            url: '/temp/<%= userdata.id%>',
+            url: '/api/useredit/<%= userdata.id%>',
             maxFilesize: 5, // MB
             maxFiles: 10,
             autoProcessQueue: false,

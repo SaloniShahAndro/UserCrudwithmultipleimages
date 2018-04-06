@@ -38,6 +38,3 @@ exports.sendMail = (data) => {
         return Promise.reject(err);
     });
 }
-exports.sendNotifyAllMail = (mailOptions) => {
-   return transporter.sendMail(mailOptions);
-}
